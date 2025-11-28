@@ -38,13 +38,14 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({
           isLocked && styles.levelButtonLocked,
           isCompleted && styles.levelButtonCompleted,
         ]}
-        onPress={() => !isLocked && onStartLevel(item.id)}
-        disabled={isLocked}
+        onPress={() => onStartLevel(item.id)} // 👈 always call
+        // 👇 remove disabled so taps go through even when locked
+        // disabled={isLocked}
       >
         <View style={styles.levelHeaderRow}>
           <Text style={styles.levelButtonText}>Level {item.levelNumber}</Text>
           <Text style={styles.levelStatusText}>
-            {isLocked ? "Locked" : isCompleted ? "Completed ✅" : "Unlocked"}
+            {isLocked ? "Locked 🔒" : isCompleted ? "Completed ✅" : "Unlocked"}
           </Text>
         </View>
         <Text style={styles.levelMeta}>

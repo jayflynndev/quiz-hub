@@ -15,6 +15,7 @@ interface VenueSelectScreenProps {
   onSelectVenue: (venueId: string) => void;
   onOpenShop: () => void; // ⬅ add
   onRefillHearts: () => void; // ⬅ add
+  onBackToHome: () => void; // ⬅ add
 }
 
 export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
@@ -22,6 +23,7 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
   onSelectVenue,
   onOpenShop,
   onRefillHearts,
+  onBackToHome,
 }) => {
   return (
     <SafeAreaView style={styles.container}>
@@ -48,6 +50,9 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
         )}
         contentContainerStyle={styles.listContent}
       />
+      <TouchableOpacity style={styles.backButton} onPress={onBackToHome}>
+        <Text style={styles.backText}>Back to Home</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.heartsButton} onPress={onRefillHearts}>
         <Text style={styles.heartsButtonText}>Refill Hearts (dev)</Text>
@@ -121,6 +126,18 @@ const styles = StyleSheet.create({
   heartsButtonText: {
     color: "#FEE2E2",
     fontSize: 12,
+    fontWeight: "600",
+  },
+  backButton: {
+    marginTop: 16,
+    backgroundColor: "#374151",
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  backText: {
+    color: "#F9FAFB",
+    textAlign: "center",
+    fontSize: 16,
     fontWeight: "600",
   },
 });
