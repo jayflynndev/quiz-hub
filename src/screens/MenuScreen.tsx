@@ -48,7 +48,8 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({
           </Text>
         </View>
         <Text style={styles.levelMeta}>
-          Questions: {item.questionIds.length} · Pass: {item.minCorrectToPass}
+          Questions: {item.questionIds?.length ?? 0} · Pass:{" "}
+          {item.minCorrectToPass}
         </Text>
       </TouchableOpacity>
     );

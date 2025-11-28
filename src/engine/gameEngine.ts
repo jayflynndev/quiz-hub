@@ -7,6 +7,7 @@ import type {
   PlayerAnswer,
   Question,
   SessionStatus,
+  QuestionDifficulty,
 } from "../types/game";
 
 import { QUESTIONS } from "../data/questions";
@@ -19,14 +20,69 @@ export const DEFAULT_TUNING: GameTuningConfig = {
 const findQuestionById = (id: string): Question | undefined =>
   QUESTIONS.find((q) => q.id === id);
 
+const getLevelDifficulty = (levelNumber: number): QuestionDifficulty => {
+  if (levelNumber <= 2) return "entry";
+  if (levelNumber <= 4) return "easy";
+  if (levelNumber <= 6) return "average";
+  if (levelNumber <= 8) return "tricky";
+  return "hard";
+};
+
+const getQuestionsPerRunForLevel = (levelNumber: number): number => {
+  if (levelNumber <= 4) return 5;
+  if (levelNumber <= 7) return 6;
+  return 7;
+};
+
 export const createSessionForLevel = (
   level: LevelConfig,
   tuning: GameTuningConfig = DEFAULT_TUNING
 ): GameSession => {
+  const questionsPerRun = getQuestionsPerRunForLevel(level.levelNumber);
+  let questionIds: string[] = [];
+
+  // 1) Try difficulty-based global pool
+  const difficulty = getLevelDifficulty(level.levelNumber);
+  const poolByDifficulty = QUESTIONS.filter(
+    (q) => q.difficulty === difficulty
+  ).map((q) => q.id);
+
+  const desiredCount = getQuestionsPerRunForLevel(level.levelNumber);
+
+  if (poolByDifficulty.length >= desiredCount) {
+    questionIds = pickRandomQuestionIds(poolByDifficulty, desiredCount);
+  } else {
+    // 2) Fallback: explicit pool if defined
+    if (level.questionPoolIds && level.questionPoolIds.length > 0) {
+      questionIds = pickRandomQuestionIds(
+        level.questionPoolIds,
+        questionsPerRun
+      );
+    }
+    // 3) Fallback: explicit questionIds if defined
+    else if (level.questionIds && level.questionIds.length > 0) {
+      questionIds = [...level.questionIds];
+    }
+    // 4) Fallback: per-level binding by levelId
+    else {
+      const poolByLevelId = QUESTIONS.filter((q) => q.levelId === level.id).map(
+        (q) => q.id
+      );
+
+      if (poolByLevelId.length > 0) {
+        const count = Math.min(desiredCount, poolByLevelId.length);
+        questionIds = pickRandomQuestionIds(poolByLevelId, count);
+      } else {
+        console.warn(`No questions found for level ${level.id}`);
+        questionIds = [];
+      }
+    }
+  }
+
   return {
     id: `session_${level.id}_${Date.now()}`,
     levelId: level.id,
-    questionIds: level.questionIds,
+    questionIds,
     currentQuestionIndex: 0,
     score: 0,
     livesRemaining: tuning.startingLivesPerLevel,
@@ -34,6 +90,7 @@ export const createSessionForLevel = (
     answers: [],
     startedAt: Date.now(),
     status: "in_progress",
+    correctCount: 0,
   };
 };
 
@@ -42,6 +99,54 @@ export const getCurrentQuestion = (
 ): Question | undefined => {
   const questionId = session.questionIds[session.currentQuestionIndex];
   return findQuestionById(questionId);
+};
+
+// ✅ NEW: safe helper for Question X of Y
+export const getQuestionProgress = (
+  session: GameSession | null | undefined
+): { currentIndex: number; total: number } => {
+  if (!session || !session.questionIds || session.questionIds.length === 0) {
+    return {
+      currentIndex: 0,
+      total: 0,
+    };
+  }
+
+  const total = session.questionIds.length;
+
+  // Clamp index defensively
+  const currentIndex =
+    session.currentQuestionIndex < 0
+      ? 0
+      : session.currentQuestionIndex >= total
+      ? total - 1
+      : session.currentQuestionIndex;
+
+  return { currentIndex, total };
+};
+
+const pickRandomQuestionIds = (pool: string[], count: number): string[] => {
+  if (pool.length <= count) {
+    // Not enough to sample uniquely, just shuffle + return
+    return [...pool].sort(() => Math.random() - 0.5);
+  }
+
+  const indices = [...pool].map((_, idx) => idx);
+  // Fisher–Yates-ish partial shuffle for first `count`
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  const chosen = indices.slice(0, count);
+  return chosen.map((idx) => pool[idx]);
+};
+
+export const getLifelinesForLevel = (level: LevelConfig): LifelineType[] => {
+  // Default: all current lifelines on
+  return level.lifelinesAllowed && level.lifelinesAllowed.length > 0
+    ? level.lifelinesAllowed
+    : ["ASK_QUIZZERS", "FIFTY_FIFTY"];
 };
 
 export const answerCurrentQuestion = (
@@ -80,7 +185,9 @@ export const answerCurrentQuestion = (
       );
     }
   } else {
-    session.livesRemaining = Math.max(0, session.livesRemaining - 1);
+    // Old in-level lives mechanic is no longer used.
+    // Wrong answers just don't give points; pass/fail is decided at the end
+    // based on total correct vs level.minCorrectToPass.
   }
 
   const updatedAnswers = [...session.answers, answer];
@@ -90,9 +197,7 @@ export const answerCurrentQuestion = (
 
   let status: SessionStatus = session.status;
 
-  if (session.livesRemaining <= 0) {
-    status = "failed";
-  } else if (isLastQuestion) {
+  if (isLastQuestion) {
     const totalCorrect = updatedAnswers.filter((a) => a.correct).length;
     status = totalCorrect >= level.minCorrectToPass ? "passed" : "failed";
   }

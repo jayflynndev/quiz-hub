@@ -1,141 +1,107 @@
 // src/data/levels.ts
-import type { LevelConfig } from "../types/game";
+import type { LevelConfig, LifelineType } from "../types/game";
 
-export const LEVELS: LevelConfig[] = [
-  // Local Pub – Level 1 (easy intro)
+type LevelPattern = {
+  minCorrectToPass: number;
+  basePointsPerCorrect: number;
+  maxSpeedBonusPerQuestion: number;
+};
+
+const STANDARD_LIFELINES: LifelineType[] = ["ASK_QUIZZERS", "FIFTY_FIFTY"];
+
+// This defines the difficulty / scoring shape for levels 1–10
+const STANDARD_LEVEL_PATTERN: LevelPattern[] = [
+  // L1
   {
-    id: "uk_pub_1",
-    venueId: "uk_local_pub",
-    levelNumber: 1,
-    type: "normal",
-    questionIds: ["q_uk_pub_1_1", "q_uk_pub_1_2", "q_uk_pub_1_3"],
-    minCorrectToPass: 2,
-    lifelinesAllowed: ["ASK_QUIZZERS"],
-    maxLifelinesPerLevel: 1,
+    minCorrectToPass: 3,
     basePointsPerCorrect: 100,
     maxSpeedBonusPerQuestion: 50,
   },
-
-  // Level 2 – still easy, introduces 4 questions
+  // L2
   {
-    id: "uk_pub_2",
-    venueId: "uk_local_pub",
-    levelNumber: 2,
-    type: "normal",
-    questionIds: [
-      "q_uk_pub_2_1",
-      "q_uk_pub_2_2",
-      "q_uk_pub_2_3",
-      "q_uk_pub_2_4",
-    ],
     minCorrectToPass: 3,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
     basePointsPerCorrect: 100,
     maxSpeedBonusPerQuestion: 50,
   },
-
-  // Level 3 – 4 questions, slightly higher pass bar
+  // L3
   {
-    id: "uk_pub_3",
-    venueId: "uk_local_pub",
-    levelNumber: 3,
-    type: "normal",
-    questionIds: [
-      "q_uk_pub_3_1",
-      "q_uk_pub_3_2",
-      "q_uk_pub_3_3",
-      "q_uk_pub_3_4",
-    ],
-    minCorrectToPass: 3,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
+    minCorrectToPass: 4,
     basePointsPerCorrect: 110,
+    maxSpeedBonusPerQuestion: 55,
+  },
+  // L4
+  {
+    minCorrectToPass: 4,
+    basePointsPerCorrect: 110,
+    maxSpeedBonusPerQuestion: 55,
+  },
+  // L5
+  {
+    minCorrectToPass: 4,
+    basePointsPerCorrect: 120,
     maxSpeedBonusPerQuestion: 60,
   },
-
-  // Level 4 – 5 questions, getting tougher
+  // L6
   {
-    id: "uk_pub_4",
-    venueId: "uk_local_pub",
-    levelNumber: 4,
-    type: "normal",
-    questionIds: [
-      "q_uk_pub_4_1",
-      "q_uk_pub_4_2",
-      "q_uk_pub_4_3",
-      "q_uk_pub_4_4",
-      "q_uk_pub_4_5",
-    ],
-    minCorrectToPass: 4,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
+    minCorrectToPass: 5,
     basePointsPerCorrect: 120,
+    maxSpeedBonusPerQuestion: 60,
+  },
+  // L7
+  {
+    minCorrectToPass: 5,
+    basePointsPerCorrect: 130,
+    maxSpeedBonusPerQuestion: 65,
+  },
+  // L8
+  {
+    minCorrectToPass: 5,
+    basePointsPerCorrect: 130,
+    maxSpeedBonusPerQuestion: 65,
+  },
+  // L9
+  {
+    minCorrectToPass: 6,
+    basePointsPerCorrect: 140,
     maxSpeedBonusPerQuestion: 70,
   },
-
-  // Level 5 – 5 questions, “mini-boss” of the pub
+  // L10
   {
-    id: "uk_pub_5",
-    venueId: "uk_local_pub",
-    levelNumber: 5,
-    type: "normal",
-    questionIds: [
-      "q_uk_pub_5_1",
-      "q_uk_pub_5_2",
-      "q_uk_pub_5_3",
-      "q_uk_pub_5_4",
-      "q_uk_pub_5_5",
-    ],
-    minCorrectToPass: 4,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
-    basePointsPerCorrect: 130,
-    maxSpeedBonusPerQuestion: 80,
-  },
-
-  // --- Village Hall ---
-
-  {
-    id: "uk_vh_1",
-    venueId: "uk_village_hall",
-    levelNumber: 1,
-    type: "normal",
-    questionIds: ["q_uk_vh_1_1", "q_uk_vh_1_2", "q_uk_vh_1_3", "q_uk_vh_1_4"],
-    minCorrectToPass: 3,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
-    basePointsPerCorrect: 140,
-    maxSpeedBonusPerQuestion: 80,
-  },
-  {
-    id: "uk_vh_2",
-    venueId: "uk_village_hall",
-    levelNumber: 2,
-    type: "normal",
-    questionIds: ["q_uk_vh_2_1", "q_uk_vh_2_2", "q_uk_vh_2_3", "q_uk_vh_2_4"],
-    minCorrectToPass: 3,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
+    minCorrectToPass: 6,
     basePointsPerCorrect: 150,
-    maxSpeedBonusPerQuestion: 90,
+    maxSpeedBonusPerQuestion: 75,
   },
-  {
-    id: "uk_vh_3",
-    venueId: "uk_village_hall",
-    levelNumber: 3,
-    type: "normal",
-    questionIds: [
-      "q_uk_vh_3_1",
-      "q_uk_vh_3_2",
-      "q_uk_vh_3_3",
-      "q_uk_vh_3_4",
-      "q_uk_vh_3_5",
-    ],
-    minCorrectToPass: 4,
-    lifelinesAllowed: [],
-    maxLifelinesPerLevel: 0,
-    basePointsPerCorrect: 160,
-    maxSpeedBonusPerQuestion: 100,
-  },
+];
+
+const createStandardLevelsForVenue = (
+  venueId: string,
+  baseIdPrefix: string
+): LevelConfig[] => {
+  return STANDARD_LEVEL_PATTERN.map((pattern, index) => {
+    const levelNumber = index + 1;
+    const id = `${baseIdPrefix}_${levelNumber}`;
+
+    const level: LevelConfig = {
+      id,
+      venueId,
+      levelNumber,
+      type: "normal",
+      minCorrectToPass: pattern.minCorrectToPass,
+      lifelinesAllowed: STANDARD_LIFELINES,
+      maxLifelinesPerLevel: 3,
+      basePointsPerCorrect: pattern.basePointsPerCorrect,
+      maxSpeedBonusPerQuestion: pattern.maxSpeedBonusPerQuestion,
+      // No questionIds/questionPoolIds needed:
+      // engine will pull from global difficulty-based pool.
+    };
+
+    return level;
+  });
+};
+
+export const LEVELS: LevelConfig[] = [
+  // UK Local Pub
+  ...createStandardLevelsForVenue("uk_local_pub", "uk_pub"),
+  // UK Village Hall
+  ...createStandardLevelsForVenue("uk_village_hall", "uk_vh"),
 ];

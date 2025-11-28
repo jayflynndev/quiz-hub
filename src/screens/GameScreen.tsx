@@ -2,9 +2,15 @@
 import * as React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GameSession, LevelConfig, LifelineType } from "../types/game";
+import type {
+  GameSession,
+  LevelConfig,
+  LifelineType,
+  PlayerProfile,
+  RewardSummary,
+} from "../types/game";
 
-import { getCurrentQuestion } from "../engine/gameEngine";
+import { getCurrentQuestion, getQuestionProgress } from "../engine/gameEngine";
 
 interface GameScreenProps {
   session: GameSession;
@@ -18,7 +24,15 @@ interface GameScreenProps {
   askQuizzersRemaining: number;
   usedAskQuizzersThisQuestion: boolean;
   onUseAskQuizzers: () => void;
+  fiftyFiftyRemaining: number;
+  usedFiftyFiftyThisQuestion: boolean;
+  onUseFiftyFifty: () => void;
+  hiddenOptions: string[];
   audiencePoll: Record<string, number> | null;
+  timeLeft: number | null;
+  profile: PlayerProfile;
+  xpToNextLevel: number;
+  rewardSummary?: RewardSummary | null;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -33,10 +47,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   askQuizzersRemaining,
   usedAskQuizzersThisQuestion,
   onUseAskQuizzers,
+  fiftyFiftyRemaining,
+  usedFiftyFiftyThisQuestion,
+  onUseFiftyFifty,
+  hiddenOptions,
   audiencePoll,
+  timeLeft,
+  profile,
+  xpToNextLevel,
+  rewardSummary,
 }) => {
   const question = getCurrentQuestion(session);
   const isFinished = session.status === "passed" || session.status === "failed";
+  const outOfHearts = !isFinished && session.livesRemaining <= 0;
+  const { currentIndex, total } = getQuestionProgress(session);
 
   if (!question && !isFinished) {
     return (
@@ -49,14 +73,47 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     );
   }
 
+  if (outOfHearts) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.header}>You're Out of Hearts 💔</Text>
+        <Text style={styles.subHeader}>
+          You need hearts to play levels. Come back later or buy more!
+        </Text>
+
+        <TouchableOpacity style={styles.optionButton} onPress={onBackToMenu}>
+          <Text style={styles.optionText}>Back to Level Select</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.optionButton, styles.shopButton]}
+          onPress={() => {
+            // later: navigate to ShopScreen
+            onBackToMenu(); // for now
+          }}
+        >
+          <Text style={styles.optionText}>Buy Hearts</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>
-        UK · {venueName} · Level {level.levelNumber}
-      </Text>
+      <Text style={styles.subHeader}>Score: {session.score}</Text>
+      {timeLeft !== null && (
+        <Text style={styles.timerText}>Time left: {timeLeft}s</Text>
+      )}
       <Text style={styles.subHeader}>
-        Score: {session.score} · Lives: {session.livesRemaining}
+        Lv {profile.level} · XP {profile.xp}/{xpToNextLevel} · Coins{" "}
+        {profile.coins} · Hearts {profile.hearts}
       </Text>
+
+      {!isFinished && total > 0 && (
+        <Text style={styles.questionProgress}>
+          Question {currentIndex + 1} of {total}
+        </Text>
+      )}
 
       {!isFinished && question && (
         <>
@@ -74,6 +131,22 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 >
                   <Text style={styles.lifelineText}>
                     Ask Quizzers ({askQuizzersRemaining})
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+            {lifelinesAllowed.includes("FIFTY_FIFTY") &&
+              fiftyFiftyRemaining > 0 && (
+                <TouchableOpacity
+                  style={[
+                    styles.lifelineButton,
+                    usedFiftyFiftyThisQuestion && styles.lifelineButtonUsed,
+                  ]}
+                  disabled={usedFiftyFiftyThisQuestion}
+                  onPress={onUseFiftyFifty}
+                >
+                  <Text style={styles.lifelineText}>
+                    50/50 ({fiftyFiftyRemaining})
                   </Text>
                 </TouchableOpacity>
               )}
@@ -95,33 +168,35 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       {!isFinished && question && (
         <View style={styles.content}>
           <Text style={styles.question}>
-            Q{session.currentQuestionIndex + 1}. {question.text}
+            Q{currentIndex + 1}. {question.text}
           </Text>
 
           <View style={styles.optionsContainer}>
-            {question.options.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                onPress={() => onAnswer(option.id)}
-                style={[
-                  styles.optionButton,
-                  selectedOption === option.id &&
-                    option.id === question.correctOptionId &&
-                    styles.correctOption,
-                  selectedOption === option.id &&
-                    option.id !== question.correctOptionId &&
-                    styles.incorrectOption,
-                  selectedOption &&
-                    option.id !== selectedOption &&
-                    styles.disabledOption,
-                ]}
-                disabled={!!selectedOption}
-              >
-                <Text style={styles.optionText}>
-                  {option.id}. {option.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {question.options
+              .filter((option) => !hiddenOptions.includes(option.id))
+              .map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  onPress={() => onAnswer(option.id)}
+                  style={[
+                    styles.optionButton,
+                    selectedOption === option.id &&
+                      option.id === question.correctOptionId &&
+                      styles.correctOption,
+                    selectedOption === option.id &&
+                      option.id !== question.correctOptionId &&
+                      styles.incorrectOption,
+                    selectedOption &&
+                      option.id !== selectedOption &&
+                      styles.disabledOption,
+                  ]}
+                  disabled={!!selectedOption}
+                >
+                  <Text style={styles.optionText}>
+                    {option.id}. {option.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
           </View>
         </View>
       )}
@@ -132,6 +207,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             Level {session.status === "passed" ? "PASSED ✅" : "FAILED ❌"}
           </Text>
           <Text style={styles.subHeader}>Final score: {session.score}</Text>
+
+          {rewardSummary && (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryText}>
+                You answered {rewardSummary.totalCorrect} of{" "}
+                {rewardSummary.totalQuestions} correctly (
+                {Math.round(rewardSummary.accuracy * 100)}%).
+              </Text>
+
+              {rewardSummary.result === "passed" ? (
+                <>
+                  <Text style={styles.summaryText}>
+                    XP gained: {rewardSummary.xpEarned}
+                  </Text>
+                  <Text style={styles.summaryText}>
+                    Coins gained: {rewardSummary.coinsEarned}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.summaryText}>
+                  No XP or coins this time – try again!
+                </Text>
+              )}
+            </View>
+          )}
 
           <TouchableOpacity style={styles.optionButton} onPress={onRestart}>
             <Text style={styles.optionText}>Play Again</Text>
@@ -227,5 +327,32 @@ const styles = StyleSheet.create({
   pollText: {
     color: "#9CA3AF",
     fontSize: 12,
+  },
+  timerText: {
+    fontSize: 14,
+    color: "#FBBF24", // amber-ish; tweak later with styling pass
+    marginBottom: 8,
+  },
+  questionProgress: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  shopButton: {
+    marginTop: 8,
+    backgroundColor: "#9333EA", // purple CTA (adjust later)
+  },
+  summaryBox: {
+    backgroundColor: "#1F2937",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  summaryText: {
+    color: "#E5E7EB",
+    fontSize: 14,
+    marginBottom: 4,
   },
 });

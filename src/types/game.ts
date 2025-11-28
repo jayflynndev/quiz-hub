@@ -16,27 +16,40 @@ export interface AnswerOption {
   text: string;
 }
 
+export type QuestionDifficulty =
+  | "entry"
+  | "easy"
+  | "average"
+  | "tricky"
+  | "hard";
+
 export interface Question {
-  id: QuestionId;
-  levelId: LevelId;
+  id: string;
+
+  // We keep this but make it optional so we can move away from per-level binding
+  levelId?: string;
+
+  // NEW: global difficulty tagging for pool-based selection
+  difficulty?: QuestionDifficulty;
+
   text: string;
-  options: AnswerOption[];
+  options: { id: string; text: string }[];
   correctOptionId: string;
-  timeLimitSeconds?: number;
 }
 
 export interface LevelConfig {
   id: LevelId;
-  venueId: VenueId;
+  venueId: string;
   levelNumber: number;
-  type: LevelType;
-  questionIds: QuestionId[];
+  type: "normal";
+
+  // Optional / legacy – engine can ignore these now
+  questionIds?: string[];
+  questionPoolIds?: string[];
 
   minCorrectToPass: number;
-
   lifelinesAllowed: LifelineType[];
   maxLifelinesPerLevel: number;
-
   basePointsPerCorrect: number;
   maxSpeedBonusPerQuestion: number;
 }
@@ -86,13 +99,12 @@ export interface GameSession {
   currentQuestionIndex: number;
   score: number;
   livesRemaining: number;
-
   usedLifelines: LifelineType[];
   answers: PlayerAnswer[];
-
   startedAt: number;
   completedAt?: number;
   status: SessionStatus;
+  correctCount: number;
 }
 
 export interface GameTuningConfig {
@@ -104,4 +116,26 @@ export type LevelProgressStatus = "locked" | "unlocked" | "completed";
 
 export interface PlayerProgress {
   completedLevelIds: LevelId[];
+}
+
+export interface PlayerProfile {
+  xp: number;
+  level: number;
+  coins: number;
+  bonusAskQuizzers: number;
+  bonusFiftyFifty: number;
+  askQuizzersOwned: number;
+  fiftyFiftyOwned: number;
+  extraLivesOwned: number;
+  hearts: number;
+  lastHeartUpdateAt?: number;
+}
+
+export interface RewardSummary {
+  xpEarned: number;
+  coinsEarned: number;
+  totalCorrect: number;
+  totalQuestions: number;
+  accuracy: number; // 0–1
+  result: "passed" | "failed";
 }
