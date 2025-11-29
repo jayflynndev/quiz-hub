@@ -38,7 +38,6 @@ import {
   HEART_REGEN_MS,
 } from "./src/hooks/usePlayerProfile";
 import { useProgress } from "./src/hooks/useProgress";
-import { useQuestionTimer } from "./src/hooks/useQuestionTimer";
 import { useGameSession } from "./src/hooks/useGameSession";
 import { computeUpdatedStreak } from "./src/hooks/streakUtils";
 import { useShopHandlers } from "./src/hooks/useShopHandlers";
@@ -116,6 +115,7 @@ export default function App() {
     getVenueById,
     getOrderedVenueLevels,
   } = useGameData();
+
   const {
     handleBuyAskQuizzersUpgrade,
     handleBuyFiftyFiftyUpgrade,
@@ -130,6 +130,18 @@ export default function App() {
     null
   );
   const QUESTION_TIME_LIMIT_SECONDS = 10;
+
+  // --- TIMER STATE (restored from last working version) ---
+  const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
+  const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearQuestionTimer = React.useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setTimeLeft(null);
+  }, []);
 
   const handleSelectRegion = (regionId: string) => {
     setSelectedRegionId(regionId);
@@ -171,14 +183,14 @@ export default function App() {
     setSelectedLevelId(levelId);
     initialiseLevelSession(newSession, profile);
 
-    clearTimer();
+    clearQuestionTimer();
     setScreen("playing");
   };
 
   const applyAnswerOutcome = (updated: GameSession, level: LevelConfig) => {
     // Update session + clear per-question state, then stop timer
     applyUpdatedSessionForAnswer(updated);
-    clearTimer();
+    clearQuestionTimer();
 
     const totalCorrect = updated.answers.filter((a) => a.correct).length;
     const totalQuestions = updated.answers.length;
@@ -334,13 +346,46 @@ export default function App() {
     onAnswerOutcome: applyAnswerOutcome,
   });
 
-  const { timeLeft, clearTimer } = useQuestionTimer({
-    isActive:
-      screen === "playing" && !!session && session.status === "in_progress",
-    questionIndex: session?.currentQuestionIndex ?? null,
-    questionTimeLimitSeconds: QUESTION_TIME_LIMIT_SECONDS,
-    onTimeExpired: handleTimeExpired,
-  });
+  // --- TIMER EFFECT (restored behaviour) ---
+  React.useEffect(() => {
+    // Only run timer while actually playing a level
+    if (screen !== "playing" || !session || session.status !== "in_progress") {
+      clearQuestionTimer();
+      return;
+    }
+
+    // New question (or restarted) → reset timer
+    clearQuestionTimer();
+    setTimeLeft(QUESTION_TIME_LIMIT_SECONDS);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === null) return prev;
+        if (prev <= 1) {
+          // Will hit 0 now: stop timer, trigger timeout handling
+          clearQuestionTimer();
+          // Defer to allow state to settle
+          setTimeout(() => {
+            handleTimeExpired();
+          }, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Cleanup if component/effect changes
+    // NOTE: we intentionally do NOT include handleTimeExpired
+    // in the dependency array, to mirror the last working version.
+    return () => {
+      clearQuestionTimer();
+    };
+  }, [
+    screen,
+    session?.currentQuestionIndex,
+    session?.status,
+    clearQuestionTimer,
+  ]);
 
   const handleUseAskQuizzers = () => {
     if (!session || !selectedLevelId) return;
@@ -431,13 +476,13 @@ export default function App() {
     // Reset per-run state, then start the level again
     prepareSessionForLevel(profile);
     resetForRestart(profile);
-    clearTimer();
+    clearQuestionTimer();
     startLevel(selectedLevelId);
   };
 
   const handleBackToLevels = () => {
     resetSessionForExit();
-    clearTimer();
+    clearQuestionTimer();
     setScreen("levels");
   };
 

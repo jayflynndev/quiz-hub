@@ -1,4 +1,3 @@
-// src/hooks/useQuestionTimer.ts
 import * as React from "react";
 
 interface UseQuestionTimerArgs {
@@ -13,51 +12,54 @@ interface UseQuestionTimerResult {
   clearTimer: () => void;
 }
 
-export const useQuestionTimer = ({
-  isActive,
-  questionIndex,
-  questionTimeLimitSeconds,
-  onTimeExpired,
-}: UseQuestionTimerArgs): UseQuestionTimerResult => {
+/**
+ * Fully stable countdown timer:
+ * - Resets when questionIndex changes
+ * - Stops when clearTimer() is called
+ * - Calls onTimeExpired ONCE when reaching 0
+ */
+export const useQuestionTimer = (
+  args: UseQuestionTimerArgs
+): UseQuestionTimerResult => {
+  const { isActive, questionIndex, questionTimeLimitSeconds, onTimeExpired } =
+    args;
+
   const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const clearTimer = React.useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
     setTimeLeft(null);
   }, []);
 
   React.useEffect(() => {
-    if (!isActive || questionIndex === null) {
-      clearTimer();
-      return;
-    }
-
-    // fresh timer for each active question
+    // any change: wipe old timer
     clearTimer();
+
+    // don't start timer unless game is active
+    if (!isActive || questionIndex === null) return;
+
+    // fresh countdown
     setTimeLeft(questionTimeLimitSeconds);
 
-    timerRef.current = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === null) return prev;
+
         if (prev <= 1) {
           clearTimer();
-          // match previous behaviour: call expiry on next tick
-          setTimeout(() => {
-            onTimeExpired();
-          }, 0);
+          onTimeExpired();
           return 0;
         }
+
         return prev - 1;
       });
     }, 1000);
 
-    return () => {
-      clearTimer();
-    };
+    return clearTimer;
   }, [
     isActive,
     questionIndex,
