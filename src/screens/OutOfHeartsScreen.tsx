@@ -49,31 +49,37 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>You&apos;re Out of Hearts 💔</Text>
-      <Text style={styles.subHeader}>
-        Hearts are needed to attempt levels. Fail a level, lose a heart.
-      </Text>
-      <Text style={styles.subHeader}>
-        Hearts: {hearts}/{maxHearts}
-      </Text>
+      {/* Global header to match other screens */}
+      <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+      <Text style={styles.appSubtitle}>Energy · Hearts system</Text>
 
-      {timeLeftMs !== null && hearts < maxHearts && (
-        <Text style={styles.timerText}>
-          Next heart in {formatTime(timeLeftMs)}
+      <View style={styles.card}>
+        <Text style={styles.header}>You&apos;re Out of Hearts 💔</Text>
+        <Text style={styles.subHeader}>
+          Hearts are needed to attempt levels. Fail a level, lose a heart.
         </Text>
-      )}
+        <Text style={styles.subHeader}>
+          Hearts: {hearts}/{maxHearts}
+        </Text>
 
-      <View style={styles.buttons}>
-        <TouchableOpacity style={styles.primaryButton} onPress={onGoToShop}>
-          <Text style={styles.buttonText}>Go to Shop</Text>
-        </TouchableOpacity>
+        {timeLeftMs !== null && hearts < maxHearts && (
+          <Text style={styles.timerText}>
+            Next heart in {formatTime(timeLeftMs)}
+          </Text>
+        )}
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={onBackToVenues}
-        >
-          <Text style={styles.buttonText}>Back to Venues</Text>
-        </TouchableOpacity>
+        <View style={styles.buttons}>
+          <TouchableOpacity style={styles.primaryButton} onPress={onGoToShop}>
+            <Text style={styles.buttonText}>Go to Shop</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={onBackToVenues}
+          >
+            <Text style={styles.buttonText}>Back to Venues</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -84,19 +90,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#111827",
     padding: 24,
-    justifyContent: "center",
   },
-  header: {
-    fontSize: 24,
+  appTitle: {
+    fontSize: 22,
     fontWeight: "700",
     color: "#F9FAFB",
-    marginBottom: 12,
+    marginBottom: 4,
+  },
+  appSubtitle: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#F9FAFB",
+    marginBottom: 8,
     textAlign: "center",
   },
   subHeader: {
     fontSize: 14,
     color: "#9CA3AF",
-    marginBottom: 8,
+    marginBottom: 4,
     textAlign: "center",
   },
   timerText: {
@@ -106,7 +128,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttons: {
-    marginTop: 32,
+    marginTop: 24,
   },
   primaryButton: {
     backgroundColor: "#7C3AED",

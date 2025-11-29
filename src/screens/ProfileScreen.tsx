@@ -20,36 +20,57 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onLogout,
   onOpenAuth,
 }) => {
-  const progressPercent =
+  const rawPercent =
     xpToNextLevel > 0 ? Math.round((profile.xp / xpToNextLevel) * 100) : 0;
+  const progressPercent = Math.max(0, Math.min(100, rawPercent));
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Profile</Text>
-      <Text style={styles.subHeader}>Player stats & progress</Text>
+      {/* Global header to match other screens */}
+      <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+      <Text style={styles.appSubtitle}>Profile & progression</Text>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Level</Text>
-        <Text style={styles.value}>{profile.level}</Text>
+        <View style={styles.rowTop}>
+          <View>
+            <Text style={styles.levelLabel}>Level</Text>
+            <Text style={styles.levelValue}>{profile.level}</Text>
+          </View>
+          <View style={styles.heartsPill}>
+            <Text style={styles.heartsText}>❤️ {profile.hearts}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>XP</Text>
-        <Text style={styles.value}>
-          {profile.xp}/{xpToNextLevel} ({progressPercent}%)
-        </Text>
+        <View style={styles.section}>
+          <Text style={styles.label}>XP</Text>
+          <Text style={styles.value}>
+            {profile.xp}/{xpToNextLevel} ({progressPercent}%)
+          </Text>
+          <View style={styles.progressBarOuter}>
+            <View
+              style={[
+                styles.progressBarInner,
+                { width: `${progressPercent}%` },
+              ]}
+            />
+          </View>
+        </View>
 
-        <Text style={styles.label}>Coins</Text>
-        <Text style={styles.value}>{profile.coins}</Text>
+        <View style={styles.section}>
+          <Text style={styles.label}>Coins</Text>
+          <Text style={styles.value}>{profile.coins}</Text>
+        </View>
 
-        <Text style={styles.label}>Hearts</Text>
-        <Text style={styles.value}>{profile.hearts}</Text>
-
-        <Text style={styles.label}>Lifelines Owned</Text>
-        <Text style={styles.value}>
-          Ask Quizzers: {profile.askQuizzersOwned}
-          {"\n"}
-          50/50: {profile.fiftyFiftyOwned}
-        </Text>
+        <View style={styles.section}>
+          <Text style={styles.label}>Lifelines Owned</Text>
+          <Text style={styles.value}>
+            Ask Quizzers: {profile.askQuizzersOwned}
+            {"\n"}
+            50/50: {profile.fiftyFiftyOwned}
+          </Text>
+        </View>
       </View>
+
       {!isSignedIn ? (
         <TouchableOpacity style={styles.authButton} onPress={onOpenAuth}>
           <Text style={styles.authButtonText}>Sign in / Save Progress</Text>
@@ -57,9 +78,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
       ) : (
         <Text style={styles.signedInText}>Account linked ✓</Text>
       )}
+
       {isSignedIn && onLogout && (
-        <TouchableOpacity style={styles.authButton} onPress={onLogout}>
-          <Text style={styles.authButtonText}>Sign out</Text>
+        <TouchableOpacity style={styles.secondaryAuthButton} onPress={onLogout}>
+          <Text style={styles.secondaryAuthButtonText}>Sign out</Text>
         </TouchableOpacity>
       )}
 
@@ -76,13 +98,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     padding: 24,
   },
-  header: {
-    fontSize: 24,
+  appTitle: {
+    fontSize: 22,
     fontWeight: "700",
     color: "#F9FAFB",
     marginBottom: 4,
   },
-  subHeader: {
+  appSubtitle: {
     fontSize: 14,
     color: "#9CA3AF",
     marginBottom: 16,
@@ -92,10 +114,39 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
   },
+  rowTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  levelLabel: {
+    fontSize: 13,
+    color: "#9CA3AF",
+  },
+  levelValue: {
+    fontSize: 22,
+    color: "#F9FAFB",
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  heartsPill: {
+    backgroundColor: "#4B5563",
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  heartsText: {
+    color: "#F9FAFB",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  section: {
+    marginTop: 12,
+  },
   label: {
     fontSize: 13,
     color: "#9CA3AF",
-    marginTop: 8,
   },
   value: {
     fontSize: 16,
@@ -103,23 +154,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 2,
   },
-  backButton: {
-    marginTop: 24,
-    backgroundColor: "#374151",
-    paddingVertical: 12,
-    borderRadius: 10,
+  progressBarOuter: {
+    marginTop: 6,
+    height: 8,
+    backgroundColor: "#111827",
+    borderRadius: 999,
+    overflow: "hidden",
   },
-  backButtonText: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+  progressBarInner: {
+    height: "100%",
+    backgroundColor: "#7C3AED",
+    borderRadius: 999,
   },
   authButton: {
-    marginTop: 16,
+    marginTop: 20,
     backgroundColor: "#3B82F6",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   authButtonText: {
     color: "#F9FAFB",
@@ -128,9 +179,33 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   signedInText: {
-    marginTop: 16,
+    marginTop: 20,
     color: "#22C55E",
     fontSize: 14,
+    textAlign: "center",
+  },
+  secondaryAuthButton: {
+    marginTop: 12,
+    backgroundColor: "#374151",
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  secondaryAuthButtonText: {
+    color: "#F9FAFB",
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  backButton: {
+    marginTop: 24,
+    backgroundColor: "#1F2937",
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  backButtonText: {
+    color: "#F9FAFB",
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
   },
 });

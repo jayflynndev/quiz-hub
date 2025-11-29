@@ -37,11 +37,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
       }
 
       if (data.user) {
-        // In dev, if email confirmation is disabled, user will be ready immediately.
         onLinked(data.user.id);
         setMessage("Account created and linked to your progress.");
       } else {
-        // If confirmation is required, user will need to verify email.
         setMessage("Check your email to confirm your account.");
       }
     } catch (err) {
@@ -84,53 +82,58 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Save Your Progress</Text>
-      <Text style={styles.subHeader}>
-        Create an account or sign in to sync your quiz journey across devices.
-      </Text>
+      {/* Global header to match other screens */}
+      <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+      <Text style={styles.appSubtitle}>Sign in · Save your progress</Text>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#6B7280"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#6B7280"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+      <View style={styles.card}>
+        <Text style={styles.header}>Save Your Progress</Text>
+        <Text style={styles.subHeader}>
+          Create an account or sign in to sync your quiz journey across devices.
+        </Text>
 
-        {message && <Text style={styles.message}>{message}</Text>}
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#6B7280"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#6B7280"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        {loading && <ActivityIndicator style={{ marginBottom: 8 }} />}
+          {message && <Text style={styles.message}>{message}</Text>}
+          {loading && <ActivityIndicator style={{ marginBottom: 8 }} />}
 
-        <TouchableOpacity
-          style={[styles.button, disabled && styles.buttonDisabled]}
-          onPress={handleSignUp}
-          disabled={disabled}
-        >
-          <Text style={styles.buttonText}>Create Account</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.primaryButton, disabled && styles.buttonDisabled]}
+            onPress={handleSignUp}
+            disabled={disabled}
+          >
+            <Text style={styles.buttonText}>Create Account</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.secondaryButton, disabled && styles.buttonDisabled]}
-          onPress={handleSignIn}
-          disabled={disabled}
-        >
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.secondaryButton, disabled && styles.buttonDisabled]}
+            onPress={handleSignIn}
+            disabled={disabled}
+          >
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={styles.backButtonText}>Back to Profile</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -140,46 +143,64 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#111827",
-    padding: 16,
+    padding: 24,
   },
-  header: {
+  appTitle: {
     fontSize: 22,
     fontWeight: "700",
     color: "#F9FAFB",
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  subHeader: {
+  appSubtitle: {
     fontSize: 14,
     color: "#9CA3AF",
     marginBottom: 16,
+  },
+  card: {
+    backgroundColor: "#1F2937",
+    borderRadius: 16,
+    padding: 16,
+  },
+  header: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#F9FAFB",
+    marginBottom: 4,
+  },
+  subHeader: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    marginBottom: 12,
   },
   form: {
     marginTop: 8,
   },
   input: {
-    backgroundColor: "#1F2937",
+    backgroundColor: "#111827",
     color: "#F9FAFB",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#1F2937",
   },
   message: {
     color: "#FBBF24",
     marginBottom: 8,
     fontSize: 13,
   },
-  button: {
+  primaryButton: {
     backgroundColor: "#3B82F6",
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 999,
     marginBottom: 8,
   },
   secondaryButton: {
     backgroundColor: "#4B5563",
     paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+    borderRadius: 999,
+    marginBottom: 4,
   },
   buttonDisabled: {
     opacity: 0.5,
