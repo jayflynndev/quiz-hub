@@ -22,7 +22,9 @@ import {
   generateAudiencePoll,
   getCurrentQuestion,
   getLifelinesForLevel,
+  LEVEL_UP_REWARDS,
 } from "./src/engine/gameEngine";
+import { SHOP_ITEMS, ShopItemId } from "./src/data/shopItems";
 
 import { MenuScreen } from "./src/screens/MenuScreen";
 import { GameScreen } from "./src/screens/GameScreen";
@@ -36,6 +38,14 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { RegionSelectScreen } from "./src/screens/RegionSelectScreen";
 import { AuthScreen } from "./src/screens/AuthScreen";
 
+import {
+  usePlayerProfile,
+  MAX_HEARTS,
+  HEART_REGEN_MS,
+} from "./src/hooks/usePlayerProfile";
+import { useProgress } from "./src/hooks/useProgress";
+import { useQuestionTimer } from "./src/hooks/useQuestionTimer";
+
 type Screen =
   | "splash"
   | "home"
@@ -48,53 +58,14 @@ type Screen =
   | "out_of_hearts"
   | "locked"
   | "auth";
-const PROGRESS_STORAGE_KEY = "quiz_odyssey_progress_v1";
-
-const defaultProgress: PlayerProgress = {
-  completedLevelIds: [],
-};
 
 const getPlannedQuestionCount = (level: LevelConfig): number => {
-  // If this level has explicit questionIds, use them
   if (level.questionIds && level.questionIds.length > 0) {
     return level.questionIds.length;
   }
-
-  // Fallback: derive from level number (same logic as the engine)
   if (level.levelNumber <= 4) return 5;
   if (level.levelNumber <= 7) return 6;
   return 7;
-};
-
-const MAX_HEARTS = 5;
-const HEART_REGEN_MINUTES = 20; // tweak this later if you like
-const HEART_REGEN_MS = HEART_REGEN_MINUTES * 60 * 1000;
-
-const withRegeneratedHearts = (profile: PlayerProfile): PlayerProfile => {
-  // Already full – nothing to do
-  if (profile.hearts >= MAX_HEARTS) {
-    return profile.hearts === MAX_HEARTS
-      ? profile
-      : { ...profile, hearts: MAX_HEARTS };
-  }
-
-  const last = profile.lastHeartUpdateAt ?? Date.now();
-  const now = Date.now();
-  if (now <= last) return profile;
-
-  const elapsed = now - last;
-  const heartsToAdd = Math.floor(elapsed / HEART_REGEN_MS);
-  if (heartsToAdd <= 0) return profile;
-
-  const newHearts = Math.min(MAX_HEARTS, profile.hearts + heartsToAdd);
-  const consumedMs = heartsToAdd * HEART_REGEN_MS;
-  const newLast = last + consumedMs;
-
-  return {
-    ...profile,
-    hearts: newHearts,
-    lastHeartUpdateAt: newLast,
-  };
 };
 
 const getRegionName = (regionId: string): string => {
@@ -105,26 +76,61 @@ const getRegionName = (regionId: string): string => {
       return regionId;
   }
 };
-const GUEST_PROFILE_ID_KEY = "quiz_odyssey_guest_profile_id_v1";
 
-const generateGuestProfileId = (): string => {
-  // RFC4122-ish v4 UUID generator (good enough for our use)
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+const getTodayDateString = (): string => {
+  // ISO date "YYYY-MM-DD" in UTC; good enough for now
+  return new Date().toISOString().slice(0, 10);
 };
 
-const isValidUuid = (value: string | null): boolean => {
-  if (!value) return false;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    value
-  );
+const computeUpdatedStreak = (
+  profile: PlayerProfile
+): {
+  newDailyStreak: number;
+  newLastActiveAt: string;
+} => {
+  const today = getTodayDateString();
+  const last = profile.lastActiveAt;
+
+  if (!last) {
+    return { newDailyStreak: 1, newLastActiveAt: today };
+  }
+
+  if (last === today) {
+    return { newDailyStreak: profile.dailyStreak, newLastActiveAt: last };
+  }
+
+  const lastDate = new Date(`${last}T00:00:00Z`);
+  const todayDate = new Date(`${today}T00:00:00Z`);
+  const diffMs = todayDate.getTime() - lastDate.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 1) {
+    return {
+      newDailyStreak: profile.dailyStreak + 1,
+      newLastActiveAt: today,
+    };
+  }
+
+  return {
+    newDailyStreak: 1,
+    newLastActiveAt: today,
+  };
 };
 
 export default function App() {
   const [screen, setScreen] = React.useState<Screen>("splash");
+
+  const {
+    profile,
+    profileReady,
+    authUserId,
+    activeProfileId,
+    guestProfileId,
+    saveProfile,
+    handleRefillHeartsDebug,
+    handleLogout,
+    linkGuestProfileToAuthUser,
+  } = usePlayerProfile();
 
   const [session, setSession] = React.useState<GameSession | null>(null);
   const [lastAnswerTime] = React.useState(1500);
@@ -137,14 +143,19 @@ export default function App() {
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(
     null
   );
-  const [progress, setProgress] =
-    React.useState<PlayerProgress>(defaultProgress);
-  const [loadingProgress, setLoadingProgress] = React.useState(true);
+  const {
+    progress,
+    loadingProgress,
+    saveProgress,
+    getLevelStatus,
+    getLevelsForVenueWithStatus,
+  } = useProgress({ activeProfileId, profileReady });
+
   const [audiencePoll, setAudiencePoll] = React.useState<Record<
     string,
     number
   > | null>(null);
-  const [askQuizzersRemaining, setAskQuizzersRemaining] = React.useState(3); // 3 uses per level for now
+  const [askQuizzersRemaining, setAskQuizzersRemaining] = React.useState(3);
   const [usedAskQuizzersThisQuestion, setUsedAskQuizzersThisQuestion] =
     React.useState(false);
   const [fiftyFiftyRemaining, setFiftyFiftyRemaining] = React.useState(1);
@@ -161,30 +172,8 @@ export default function App() {
   const [selectedRegionId, setSelectedRegionId] = React.useState<string | null>(
     null
   );
-  const [authUserId, setAuthUserId] = React.useState<string | null>(null);
 
   const QUESTION_TIME_LIMIT_SECONDS = 10;
-
-  const [timeLeft, setTimeLeft] = React.useState<number | null>(null);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const PROFILE_STORAGE_KEY = "quiz_odyssey_profile_v1";
-  const [profile, setProfile] = React.useState<PlayerProfile>({
-    xp: 0,
-    level: 1,
-    coins: 0,
-    bonusAskQuizzers: 0,
-    bonusFiftyFifty: 0,
-    askQuizzersOwned: 3,
-    fiftyFiftyOwned: 1,
-    extraLivesOwned: 0,
-    hearts: MAX_HEARTS,
-    lastHeartUpdateAt: Date.now(),
-  });
-  const [guestProfileId, setGuestProfileId] = React.useState<string | null>(
-    null
-  );
-  const [profileReady, setProfileReady] = React.useState(false);
 
   const handleSelectRegion = (regionId: string) => {
     setSelectedRegionId(regionId);
@@ -193,400 +182,56 @@ export default function App() {
     setScreen("venues");
   };
 
+  const buyShopItem = React.useCallback(
+    (itemId: ShopItemId) => {
+      const item = SHOP_ITEMS[itemId];
+      if (!item) return;
+
+      if (profile.coins < item.cost) {
+        // later: show "not enough coins" toast
+        return;
+      }
+
+      let next: PlayerProfile = {
+        ...profile,
+        coins: profile.coins - item.cost,
+      };
+
+      switch (itemId) {
+        case "HEART": {
+          const max = item.max ?? MAX_HEARTS;
+          if (next.hearts >= max) {
+            return;
+          }
+          next.hearts = Math.min(max, next.hearts + 1);
+          break;
+        }
+        case "ASK_QUIZZERS": {
+          next.askQuizzersOwned = next.askQuizzersOwned + 1;
+          break;
+        }
+        case "FIFTY_FIFTY": {
+          next.fiftyFiftyOwned = next.fiftyFiftyOwned + 1;
+          break;
+        }
+      }
+
+      void saveProfile(next);
+    },
+    [profile, saveProfile]
+  );
+
   const handleBuyAskQuizzersUpgrade = () => {
-    const cost = 50;
-    if (profile.coins < cost) return;
-
-    const next: PlayerProfile = {
-      ...profile,
-      coins: profile.coins - cost,
-      askQuizzersOwned: profile.askQuizzersOwned + 1,
-    };
-
-    saveProfile(next);
+    buyShopItem("ASK_QUIZZERS");
   };
 
   const handleBuyFiftyFiftyUpgrade = () => {
-    const cost = 70;
-    if (profile.coins < cost) return;
-
-    const next: PlayerProfile = {
-      ...profile,
-      coins: profile.coins - cost,
-      fiftyFiftyOwned: profile.fiftyFiftyOwned + 1,
-    };
-
-    saveProfile(next);
+    buyShopItem("FIFTY_FIFTY");
   };
 
-  const handleRefillHeartsDebug = () => {
-    const next: PlayerProfile = {
-      ...profile,
-      hearts: MAX_HEARTS,
-      lastHeartUpdateAt: Date.now(),
-    };
-    saveProfile(next);
+  const handleBuyHeart = () => {
+    buyShopItem("HEART");
   };
-
-  // Load progress from AsyncStorage on mount
-  React.useEffect(() => {
-    // Wait until we know which guest profile we're using
-    if (!guestProfileId || !profileReady) return;
-
-    const loadProgress = async () => {
-      try {
-        // 1) Try Supabase first
-        const { data, error } = await supabase
-          .from("progress")
-          .select("*")
-          .eq("profile_id", guestProfileId)
-          .maybeSingle();
-
-        let baseProgress: PlayerProgress;
-
-        if (error) {
-          console.warn("Supabase loadProgress error", error);
-        }
-
-        if (data) {
-          // 2) Got progress from Supabase
-          baseProgress = {
-            completedLevelIds: (data.completed_level_ids ?? []) as LevelId[],
-          };
-        } else {
-          // 3) No Supabase row yet → fallback to local AsyncStorage or defaults
-          const raw = await AsyncStorage.getItem(PROGRESS_STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw) as PlayerProgress;
-            baseProgress = parsed;
-          } else {
-            baseProgress = defaultProgress;
-          }
-        }
-
-        // 4) Apply to state
-        setProgress(baseProgress);
-
-        // 5) Save locally as cache
-        await AsyncStorage.setItem(
-          PROGRESS_STORAGE_KEY,
-          JSON.stringify(baseProgress)
-        );
-
-        // 6) Upsert back to Supabase so this guest has cloud progress
-        const { error: upsertError } = await supabase.from("progress").upsert({
-          profile_id: guestProfileId,
-          completed_level_ids: baseProgress.completedLevelIds,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (upsertError) {
-          console.warn("Supabase upsert progress error", upsertError);
-        }
-      } catch (err) {
-        console.warn("Failed to load progress (Supabase + local)", err);
-        setProgress(defaultProgress);
-      } finally {
-        setLoadingProgress(false);
-      }
-    };
-
-    loadProgress();
-  }, [guestProfileId, profileReady]);
-
-  React.useEffect(() => {
-    const ensureGuestProfileId = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(GUEST_PROFILE_ID_KEY);
-
-        if (isValidUuid(stored)) {
-          // Stored value is already a proper UUID
-          setGuestProfileId(stored as string);
-          return;
-        }
-
-        // Either nothing stored, or an old "guest_..." value → generate a fresh UUID
-        const newId = generateGuestProfileId();
-        await AsyncStorage.setItem(GUEST_PROFILE_ID_KEY, newId);
-        setGuestProfileId(newId);
-      } catch (err) {
-        console.warn("Failed to ensure guest profile id", err);
-      }
-    };
-
-    ensureGuestProfileId();
-  }, []);
-
-  React.useEffect(() => {
-    if (!guestProfileId) return; // wait until we know who this guest is
-
-    const loadProfile = async () => {
-      try {
-        // 1) Try Supabase first
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", guestProfileId)
-          .maybeSingle();
-
-        let baseProfile: PlayerProfile;
-
-        if (error) {
-          console.warn("Supabase loadProfile error", error);
-        }
-
-        if (data) {
-          // 2) Got a row from Supabase → map to PlayerProfile
-          baseProfile = {
-            xp: data.xp ?? 0,
-            level: data.level ?? 1,
-            coins: data.coins ?? 0,
-            bonusAskQuizzers: 0, // not in DB yet; keep as 0 for now
-            bonusFiftyFifty: 0,
-            askQuizzersOwned: data.ask_quizzers_owned ?? 3,
-            fiftyFiftyOwned: data.fifty_fifty_owned ?? 1,
-            extraLivesOwned: data.extra_lives_owned ?? 0,
-            hearts: data.hearts ?? MAX_HEARTS,
-            lastHeartUpdateAt:
-              typeof data.last_heart_update_at === "number"
-                ? data.last_heart_update_at
-                : Date.now(),
-          };
-        } else {
-          // 3) No Supabase row yet → seed from AsyncStorage or defaults
-          const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw) as Partial<PlayerProfile>;
-            baseProfile = {
-              xp: parsed.xp ?? 0,
-              level: parsed.level ?? 1,
-              coins: parsed.coins ?? 0,
-              bonusAskQuizzers: parsed.bonusAskQuizzers ?? 0,
-              bonusFiftyFifty: parsed.bonusFiftyFifty ?? 0,
-              askQuizzersOwned: parsed.askQuizzersOwned ?? 3,
-              fiftyFiftyOwned: parsed.fiftyFiftyOwned ?? 1,
-              extraLivesOwned: parsed.extraLivesOwned ?? 0,
-              hearts: parsed.hearts ?? MAX_HEARTS,
-              lastHeartUpdateAt: parsed.lastHeartUpdateAt ?? Date.now(),
-            };
-          } else {
-            // First-ever launch → brand new profile
-            baseProfile = {
-              xp: 0,
-              level: 1,
-              coins: 0,
-              bonusAskQuizzers: 0,
-              bonusFiftyFifty: 0,
-              askQuizzersOwned: 3,
-              fiftyFiftyOwned: 1,
-              extraLivesOwned: 0,
-              hearts: MAX_HEARTS,
-              lastHeartUpdateAt: Date.now(),
-            };
-          }
-        }
-
-        // 4) Apply heart regeneration logic
-        const hydrated = withRegeneratedHearts(baseProfile);
-        setProfile(hydrated);
-
-        // 5) Save locally as cache
-        await AsyncStorage.setItem(
-          PROFILE_STORAGE_KEY,
-          JSON.stringify(hydrated)
-        );
-
-        // 6) Upsert back to Supabase so this guest has a cloud profile
-        await supabase.from("profiles").upsert({
-          id: guestProfileId,
-          auth_user_id: null, // guest mode
-          xp: hydrated.xp,
-          level: hydrated.level,
-          coins: hydrated.coins,
-          hearts: hydrated.hearts,
-          last_heart_update_at: hydrated.lastHeartUpdateAt,
-          ask_quizzers_owned: hydrated.askQuizzersOwned,
-          fifty_fifty_owned: hydrated.fiftyFiftyOwned,
-          extra_lives_owned: hydrated.extraLivesOwned,
-        });
-        setProfileReady(true);
-      } catch (err) {
-        console.warn("Failed to load profile (Supabase + local)", err);
-      }
-    };
-
-    loadProfile();
-  }, [guestProfileId]);
-
-  React.useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) {
-          console.warn("supabase.auth.getUser error", error);
-        }
-        setAuthUserId(data?.user?.id ?? null);
-      } catch (err) {
-        console.warn("initAuth failed", err);
-      }
-    };
-
-    initAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthUserId(session?.user?.id ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const linkGuestProfileToAuthUser = React.useCallback(
-    async (userId: string) => {
-      if (!guestProfileId) return;
-
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ auth_user_id: userId })
-          .eq("id", guestProfileId);
-
-        if (error) {
-          console.warn("linkGuestProfileToAuthUser error", error);
-        } else {
-          setAuthUserId(userId);
-        }
-      } catch (err) {
-        console.warn("Failed to link guest profile to auth user", err);
-      }
-    },
-    [guestProfileId]
-  );
-
-  const saveProfile = React.useCallback(
-    async (next: PlayerProfile) => {
-      try {
-        // 1) Update local React state
-        setProfile(next);
-
-        // 2) Persist to AsyncStorage (local cache / offline)
-        await AsyncStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(next));
-
-        // 3) Also upsert to Supabase if we have a guestProfileId
-        if (guestProfileId) {
-          const { error } = await supabase.from("profiles").upsert({
-            id: guestProfileId,
-            auth_user_id: null, // still guest mode
-            xp: next.xp,
-            level: next.level,
-            coins: next.coins,
-            hearts: next.hearts,
-            last_heart_update_at: next.lastHeartUpdateAt,
-            ask_quizzers_owned: next.askQuizzersOwned,
-            fifty_fifty_owned: next.fiftyFiftyOwned,
-            extra_lives_owned: next.extraLivesOwned,
-          });
-
-          if (error) {
-            console.warn("Supabase saveProfile error", error);
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to save profile", err);
-      }
-    },
-    [guestProfileId]
-  );
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setProfile((prev) => {
-        const next = withRegeneratedHearts(prev);
-        if (next === prev) return prev;
-
-        // Persist updated hearts
-        AsyncStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(next)).catch(
-          (err) => console.warn("Failed to save profile (regen)", err)
-        );
-        return next;
-      });
-    }, 1000); // tick every second
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const clearQuestionTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setTimeLeft(null);
-  };
-
-  React.useEffect(() => {
-    // Only run timer while actually playing a level
-    if (screen !== "playing" || !session || session.status !== "in_progress") {
-      clearQuestionTimer();
-      return;
-    }
-
-    // New question (or restarted) → reset timer
-    clearQuestionTimer();
-    setTimeLeft(QUESTION_TIME_LIMIT_SECONDS);
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev === null) return prev;
-        if (prev <= 1) {
-          // Will hit 0 now: stop timer, trigger timeout handling
-          clearQuestionTimer();
-          // Defer to allow state to settle
-          setTimeout(() => {
-            handleTimeExpired();
-          }, 0);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Cleanup if component/effect changes
-    return () => {
-      clearQuestionTimer();
-    };
-    // 👇 We care about: screen, current question index, and session status
-  }, [screen, session?.currentQuestionIndex, session?.status]);
-
-  const saveProgress = React.useCallback(
-    async (next: PlayerProgress) => {
-      try {
-        // 1) Update local state
-        setProgress(next);
-
-        // 2) Save to AsyncStorage
-        await AsyncStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(next));
-
-        // 3) Sync to Supabase if we know the guestProfileId
-        if (guestProfileId) {
-          const { error } = await supabase.from("progress").upsert({
-            profile_id: guestProfileId,
-            completed_level_ids: next.completedLevelIds,
-            updated_at: new Date().toISOString(),
-          });
-
-          if (error) {
-            console.warn("Supabase saveProgress error", error);
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to save progress", err);
-      }
-    },
-    [guestProfileId]
-  );
 
   const allVenues = React.useMemo(
     () => [...VENUES].sort((a, b) => a.order - b.order),
@@ -620,51 +265,6 @@ export default function App() {
     return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
   }, [allVenues]);
 
-  const getLevelStatus = React.useCallback(
-    (levelId: LevelId): LevelProgressStatus => {
-      const level = getLevelById(levelId);
-      if (!level) return "locked";
-
-      const isCompleted = progress.completedLevelIds.includes(levelId);
-      if (isCompleted) return "completed";
-
-      // Within each venue: Level 1 is always unlocked
-      if (level.levelNumber === 1) {
-        return "unlocked";
-      }
-
-      // To unlock Level N: Level N-1 in the same venue must be completed
-      const venueLevels = LEVELS.filter(
-        (l) => l.venueId === level.venueId
-      ).sort((a, b) => a.levelNumber - b.levelNumber);
-
-      const previousLevel = venueLevels.find(
-        (l) => l.levelNumber === level.levelNumber - 1
-      );
-      if (!previousLevel) return "locked";
-
-      const previousCompleted = progress.completedLevelIds.includes(
-        previousLevel.id
-      );
-
-      return previousCompleted ? "unlocked" : "locked";
-    },
-    [progress.completedLevelIds]
-  );
-
-  const getLevelsForCurrentVenueWithStatus = React.useCallback(() => {
-    if (!selectedVenueId) return [];
-
-    const venueLevels = LEVELS.filter(
-      (l) => l.venueId === selectedVenueId
-    ).sort((a, b) => a.levelNumber - b.levelNumber);
-
-    return venueLevels.map((level) => ({
-      ...level,
-      status: getLevelStatus(level.id),
-    }));
-  }, [selectedVenueId, getLevelStatus]);
-
   const startLevel = (levelId: LevelId) => {
     const level = getLevelById(levelId);
     if (!level) return;
@@ -691,7 +291,6 @@ export default function App() {
       return;
     }
 
-    // ❤️ No hearts left → show Out-of-Hearts screen
     if (profile.hearts <= 0) {
       setScreen("out_of_hearts");
       return;
@@ -710,7 +309,7 @@ export default function App() {
     setUsedFiftyFiftyThisQuestion(false);
     setHiddenOptions([]);
 
-    clearQuestionTimer();
+    clearTimer();
     setScreen("playing");
   };
 
@@ -718,33 +317,31 @@ export default function App() {
     setSelectedOption(null);
     setSession(updated);
 
-    // Clear per-question stuff
     setAudiencePoll(null);
     setUsedAskQuizzersThisQuestion(false);
     setUsedFiftyFiftyThisQuestion(false);
     setHiddenOptions([]);
-    clearQuestionTimer(); // stop timer for this question; effect will restart if there's another
+    clearTimer();
+
     const totalCorrect = updated.answers.filter((a) => a.correct).length;
     const totalQuestions = updated.answers.length;
     const accuracy = totalQuestions > 0 ? totalCorrect / totalQuestions : 0;
 
-    // Handle level completion
-    // --- Level completion + rewards ---
     if (updated.status === "passed") {
       if (!progress.completedLevelIds.includes(level.id)) {
         const nextProgress: PlayerProgress = {
           ...progress,
           completedLevelIds: [...progress.completedLevelIds, level.id],
         };
-        saveProgress(nextProgress);
+        void saveProgress(nextProgress);
       }
 
       const baseXP = 50;
       const accuracyXP = Math.floor(accuracy * 150);
-      const lifeXP = 0; // in-level lives removed
+      const lifeXP = 0;
       const xpEarned = baseXP + accuracyXP + lifeXP;
 
-      const coinsEarned =
+      const coinsEarnedBase =
         5 +
         totalCorrect +
         (updated.usedLifelines.length === 0 ? 5 : 0) +
@@ -752,47 +349,119 @@ export default function App() {
 
       let newXP = profile.xp + xpEarned;
       let newLevel = profile.level;
+      let levelsGained = 0;
 
       let xpToNext = newLevel * 100;
       while (newXP >= xpToNext) {
         newXP -= xpToNext;
         newLevel += 1;
+        levelsGained += 1;
         xpToNext = newLevel * 100;
       }
 
-      const newCoins = profile.coins + coinsEarned;
+      let bonusCoins = 0;
+      let bonusAskQuizzers = 0;
+      let bonusHearts = 0;
 
-      saveProfile({
+      if (levelsGained > 0) {
+        for (let i = 1; i <= levelsGained; i++) {
+          const reachedLevel = profile.level + i;
+
+          bonusCoins += LEVEL_UP_REWARDS.everyLevel.coins;
+
+          if (reachedLevel % 3 === 0) {
+            if (LEVEL_UP_REWARDS.every3Levels.lifeline === "ASK_QUIZZERS") {
+              bonusAskQuizzers += 1;
+            }
+          }
+
+          if (reachedLevel % 5 === 0) {
+            bonusHearts += LEVEL_UP_REWARDS.every5Levels.heart;
+          }
+        }
+      }
+
+      const { newDailyStreak, newLastActiveAt } = computeUpdatedStreak(profile);
+
+      let streakBonusCoins = 0;
+      let streakBonusHearts = 0;
+
+      if (newDailyStreak !== profile.dailyStreak) {
+        streakBonusCoins = 5 + newDailyStreak;
+        if (newDailyStreak % 5 === 0) {
+          streakBonusHearts = 1;
+        }
+      }
+
+      const totalCoinsEarned = coinsEarnedBase + bonusCoins + streakBonusCoins;
+
+      const newCoins = profile.coins + totalCoinsEarned;
+      const newAskOwned = profile.askQuizzersOwned + bonusAskQuizzers;
+      const newHearts = Math.min(
+        MAX_HEARTS,
+        profile.hearts + bonusHearts + streakBonusHearts
+      );
+
+      void saveProfile({
         ...profile,
         xp: newXP,
         level: newLevel,
         coins: newCoins,
+        askQuizzersOwned: newAskOwned,
+        hearts: newHearts,
+        dailyStreak: newDailyStreak,
+        lastActiveAt: newLastActiveAt,
       });
 
       setLastRewardSummary({
         xpEarned,
-        coinsEarned,
+        coinsEarned: totalCoinsEarned,
         totalCorrect,
         totalQuestions,
         accuracy,
         result: "passed",
+        bonusAskQuizzers,
+        bonusHearts: bonusHearts + streakBonusHearts,
       });
     } else if (updated.status === "failed") {
-      const nextHearts = Math.max(0, profile.hearts - 1);
+      const { newDailyStreak, newLastActiveAt } = computeUpdatedStreak(profile);
 
-      saveProfile({
+      let streakBonusCoins = 0;
+      let streakBonusHearts = 0;
+
+      if (newDailyStreak !== profile.dailyStreak) {
+        streakBonusCoins = 5 + newDailyStreak;
+        if (newDailyStreak % 5 === 0) {
+          streakBonusHearts = 1;
+        }
+      }
+
+      const heartsAfterFail = Math.max(0, profile.hearts - 1);
+      const newHearts = Math.min(
+        MAX_HEARTS,
+        heartsAfterFail + streakBonusHearts
+      );
+
+      const newCoins = profile.coins + streakBonusCoins;
+
+      void saveProfile({
         ...profile,
-        hearts: nextHearts,
+        hearts: newHearts,
         lastHeartUpdateAt: Date.now(),
+        coins: newCoins,
+        dailyStreak: newDailyStreak,
+        lastActiveAt: newLastActiveAt,
       });
 
       setLastRewardSummary({
         xpEarned: 0,
-        coinsEarned: 0,
+        coinsEarned: streakBonusCoins,
         totalCorrect,
         totalQuestions,
         accuracy,
         result: "failed",
+        bonusAskQuizzers: 0,
+        bonusHearts: streakBonusHearts,
       });
     }
   };
@@ -827,13 +496,11 @@ export default function App() {
     const question = getCurrentQuestion(session);
     if (!question) return;
 
-    // Pick a guaranteed wrong option to simulate a wrong answer
     const wrongOption = question.options.find(
       (o) => o.id !== question.correctOptionId
     );
     if (!wrongOption) return;
 
-    // Treat as a very slow wrong answer
     const updated = answerCurrentQuestion(
       session,
       level,
@@ -841,9 +508,16 @@ export default function App() {
       QUESTION_TIME_LIMIT_SECONDS * 1000
     );
 
-    // No need for delay animation here; go straight to next state
     applyAnswerOutcome(updated, level);
   };
+
+  const { timeLeft, clearTimer } = useQuestionTimer({
+    isActive:
+      screen === "playing" && !!session && session.status === "in_progress",
+    questionIndex: session?.currentQuestionIndex ?? null,
+    questionTimeLimitSeconds: QUESTION_TIME_LIMIT_SECONDS,
+    onTimeExpired: handleTimeExpired,
+  });
 
   const handleUseAskQuizzers = () => {
     if (!session || !selectedLevelId) return;
@@ -854,13 +528,8 @@ export default function App() {
     const lifelines = getLifelinesForLevel(level);
     if (!lifelines.includes("ASK_QUIZZERS")) return;
 
-    // No uses left in this level
     if (askQuizzersRemaining <= 0) return;
-
-    // Already used on this question
     if (usedAskQuizzersThisQuestion) return;
-
-    // No inventory left overall (Candy Crush style check)
     if (profile.askQuizzersOwned <= 0) return;
 
     const question = getCurrentQuestion(session);
@@ -870,11 +539,9 @@ export default function App() {
     setAudiencePoll(poll);
     setUsedAskQuizzersThisQuestion(true);
 
-    // Decrease per-level count
     setAskQuizzersRemaining((prev) => Math.max(0, prev - 1));
 
-    // Decrease inventory and persist
-    saveProfile({
+    void saveProfile({
       ...profile,
       askQuizzersOwned: Math.max(0, profile.askQuizzersOwned - 1),
     });
@@ -886,17 +553,11 @@ export default function App() {
     const level = getLevelById(selectedLevelId);
     if (!level) return;
 
-    // Lifeline must be allowed on this level
     const lifelines = getLifelinesForLevel(level);
     if (!lifelines.includes("FIFTY_FIFTY")) return;
 
-    // No uses left in this level
     if (fiftyFiftyRemaining <= 0) return;
-
-    // Already used on this question
     if (usedFiftyFiftyThisQuestion) return;
-
-    // No inventory left overall
     if (profile.fiftyFiftyOwned <= 0) return;
 
     const question = getCurrentQuestion(session);
@@ -913,11 +574,9 @@ export default function App() {
     setHiddenOptions(toHide);
     setUsedFiftyFiftyThisQuestion(true);
 
-    // Decrease per-level count
     setFiftyFiftyRemaining((prev) => Math.max(0, prev - 1));
 
-    // Decrease inventory and persist
-    saveProfile({
+    void saveProfile({
       ...profile,
       fiftyFiftyOwned: Math.max(0, profile.fiftyFiftyOwned - 1),
     });
@@ -929,10 +588,7 @@ export default function App() {
     const level = getLevelById(selectedLevelId);
     if (!level) return;
 
-    // Don’t apply if level doesn’t allow it
     if (!level.lifelinesAllowed.includes(lifeline)) return;
-
-    // Don’t reuse same lifeline
     if (session.usedLifelines.includes(lifeline)) return;
 
     const updatedSession = useLifeline(session, level, lifeline);
@@ -944,8 +600,6 @@ export default function App() {
       const poll = generateAudiencePoll(question);
       setAudiencePoll(poll);
     }
-
-    // (We’ll handle FIFTY_FIFTY etc later)
   };
 
   const handleRestart = () => {
@@ -960,7 +614,7 @@ export default function App() {
     setUsedFiftyFiftyThisQuestion(false);
     setHiddenOptions([]);
 
-    clearQuestionTimer();
+    clearTimer();
     startLevel(selectedLevelId);
   };
 
@@ -975,7 +629,7 @@ export default function App() {
     setUsedFiftyFiftyThisQuestion(false);
     setHiddenOptions([]);
     setLastRewardSummary(null);
-    clearQuestionTimer();
+    clearTimer();
     setScreen("levels");
   };
 
@@ -1034,6 +688,7 @@ export default function App() {
         xpToNextLevel={xpToNextLevel}
         isSignedIn={!!authUserId}
         onOpenAuth={() => setScreen("auth")}
+        onLogout={handleLogout}
         onBack={() => setScreen("home")}
       />
     );
@@ -1068,6 +723,7 @@ export default function App() {
         profile={profile}
         onBuyAskQuizzersUpgrade={handleBuyAskQuizzersUpgrade}
         onBuyFiftyFiftyUpgrade={handleBuyFiftyFiftyUpgrade}
+        onBuyHeart={handleBuyHeart}
         onBack={() => setScreen("home")}
       />
     );
@@ -1075,7 +731,6 @@ export default function App() {
 
   if (screen === "venues") {
     if (!selectedRegionId) {
-      // No region selected yet → go to region select
       return (
         <RegionSelectScreen
           regions={regions}
@@ -1087,10 +742,9 @@ export default function App() {
 
     const venuesForRegion = getVenuesForRegion(selectedRegionId);
     const venue = getVenueById(selectedVenueId);
-    const levelsWithStatus = getLevelsForCurrentVenueWithStatus();
+    const levelsWithStatus = getLevelsForVenueWithStatus(selectedVenueId);
 
     if (!venue) {
-      // No specific venue selected yet → show venues in this region
       return (
         <VenueSelectScreen
           venues={venuesForRegion}
@@ -1132,7 +786,6 @@ export default function App() {
 
   if (screen === "levels") {
     if (!selectedRegionId) {
-      // No region selected → go back to region select
       return (
         <RegionSelectScreen
           regions={regions}
@@ -1144,10 +797,9 @@ export default function App() {
 
     const venuesForRegion = getVenuesForRegion(selectedRegionId);
     const venue = getVenueById(selectedVenueId);
-    const levelsWithStatus = getLevelsForCurrentVenueWithStatus();
+    const levelsWithStatus = getLevelsForVenueWithStatus(selectedVenueId);
 
     if (!venue) {
-      // No specific venue selected yet → show venues in this region
       return (
         <VenueSelectScreen
           venues={venuesForRegion}
@@ -1175,7 +827,6 @@ export default function App() {
 
   // playing
   if (!session || !selectedLevelId) {
-    // Fallback if something odd happened
     if (!selectedRegionId) {
       return (
         <RegionSelectScreen

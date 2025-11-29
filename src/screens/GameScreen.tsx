@@ -208,6 +208,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </Text>
           <Text style={styles.subHeader}>Final score: {session.score}</Text>
 
+          {rewardSummary && session.status === "passed" && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.subHeader}>
+                XP Earned: {rewardSummary.xpEarned}
+              </Text>
+              <Text style={styles.subHeader}>
+                Coins Earned (incl. bonuses): {rewardSummary.coinsEarned}
+              </Text>
+              <Text style={styles.subHeader}>
+                Accuracy: {(rewardSummary.accuracy * 100).toFixed(0)}%
+              </Text>
+
+              {(rewardSummary.bonusAskQuizzers ?? 0) > 0 && (
+                <Text style={styles.subHeader}>
+                  Bonus Ask Quizzers: +{rewardSummary.bonusAskQuizzers}
+                </Text>
+              )}
+
+              {(rewardSummary.bonusHearts ?? 0) > 0 && (
+                <Text style={styles.subHeader}>
+                  Bonus Hearts: +{rewardSummary.bonusHearts}
+                </Text>
+              )}
+            </View>
+          )}
+
           {rewardSummary && (
             <View style={styles.summaryBox}>
               <Text style={styles.summaryText}>

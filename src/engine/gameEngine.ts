@@ -269,3 +269,17 @@ export const useLifeline = (
     usedLifelines: [...session.usedLifelines, lifeline],
   };
 };
+
+// src/data/levelUpRewards.ts
+
+export const LEVEL_UP_REWARDS = {
+  everyLevel: {
+    coins: 10, // small reward every XP level-up
+  },
+  every3Levels: {
+    lifeline: "ASK_QUIZZERS" as const,
+  },
+  every5Levels: {
+    heart: 1,
+  },
+};

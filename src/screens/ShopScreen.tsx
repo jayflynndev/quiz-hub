@@ -7,6 +7,7 @@ interface ShopScreenProps {
   profile: PlayerProfile;
   onBuyAskQuizzersUpgrade: () => void;
   onBuyFiftyFiftyUpgrade: () => void;
+  onBuyHeart: () => void;
   onBack: () => void;
 }
 
@@ -14,13 +15,14 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({
   profile,
   onBuyAskQuizzersUpgrade,
   onBuyFiftyFiftyUpgrade,
+  onBuyHeart,
   onBack,
 }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Quiz Hub Shop</Text>
       <Text style={styles.subHeader}>
-        Coins: {profile.coins} · Lv {profile.level}
+        Coins: {profile.coins} · Hearts: {profile.hearts} · Lv {profile.level}
       </Text>
 
       <View style={styles.section}>
@@ -46,6 +48,12 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
+      <TouchableOpacity onPress={onBuyHeart} style={styles.itemButton}>
+        <Text style={styles.itemTitle}>Buy 1 Heart</Text>
+        <Text style={styles.itemMeta}>
+          Cost: 50 coins · Owned: {profile.hearts}
+        </Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
         <Text style={styles.backText}>Back</Text>

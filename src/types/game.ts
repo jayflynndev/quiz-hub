@@ -129,6 +129,8 @@ export interface PlayerProfile {
   extraLivesOwned: number;
   hearts: number;
   lastHeartUpdateAt?: number;
+  dailyStreak: number; // 👈 new
+  lastActiveAt: string | null; // ISO date string "YYYY-MM-DD" or null
 }
 
 export interface RewardSummary {
@@ -138,4 +140,6 @@ export interface RewardSummary {
   totalQuestions: number;
   accuracy: number; // 0–1
   result: "passed" | "failed";
+  bonusAskQuizzers?: number;
+  bonusHearts?: number;
 }

@@ -8,6 +8,7 @@ interface ProfileScreenProps {
   xpToNextLevel: number;
   isSignedIn: boolean;
   onOpenAuth: () => void;
+  onLogout?: () => void;
   onBack: () => void;
 }
 
@@ -16,6 +17,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   xpToNextLevel,
   onBack,
   isSignedIn,
+  onLogout,
   onOpenAuth,
 }) => {
   const progressPercent =
@@ -54,6 +56,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </TouchableOpacity>
       ) : (
         <Text style={styles.signedInText}>Account linked ✓</Text>
+      )}
+      {isSignedIn && onLogout && (
+        <TouchableOpacity style={styles.authButton} onPress={onLogout}>
+          <Text style={styles.authButtonText}>Sign out</Text>
+        </TouchableOpacity>
       )}
 
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
