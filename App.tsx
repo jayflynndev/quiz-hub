@@ -1,30 +1,22 @@
 // App.tsx
 import * as React from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "./src/lib/supabaseClient";
 
 import type {
   GameSession,
   LevelId,
   PlayerProgress,
-  LevelProgressStatus,
   LifelineType,
   LevelConfig,
   PlayerProfile,
-  RewardSummary,
 } from "./src/types/game";
-import { LEVELS } from "./src/data/levels";
-import { VENUES } from "./src/data/venues";
 import {
   createSessionForLevel,
-  answerCurrentQuestion,
   useLifeline,
   generateAudiencePoll,
   getCurrentQuestion,
   getLifelinesForLevel,
   LEVEL_UP_REWARDS,
 } from "./src/engine/gameEngine";
-import { SHOP_ITEMS, ShopItemId } from "./src/data/shopItems";
 
 import { MenuScreen } from "./src/screens/MenuScreen";
 import { GameScreen } from "./src/screens/GameScreen";
@@ -38,6 +30,8 @@ import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { RegionSelectScreen } from "./src/screens/RegionSelectScreen";
 import { AuthScreen } from "./src/screens/AuthScreen";
 
+import { useGameData } from "./src/hooks/useGameData";
+import { useAnswerHandlers } from "./src/hooks/useAnswerHandlers";
 import {
   usePlayerProfile,
   MAX_HEARTS,
@@ -45,6 +39,9 @@ import {
 } from "./src/hooks/usePlayerProfile";
 import { useProgress } from "./src/hooks/useProgress";
 import { useQuestionTimer } from "./src/hooks/useQuestionTimer";
+import { useGameSession } from "./src/hooks/useGameSession";
+import { computeUpdatedStreak } from "./src/hooks/streakUtils";
+import { useShopHandlers } from "./src/hooks/useShopHandlers";
 
 type Screen =
   | "splash"
@@ -58,64 +55,6 @@ type Screen =
   | "out_of_hearts"
   | "locked"
   | "auth";
-
-const getPlannedQuestionCount = (level: LevelConfig): number => {
-  if (level.questionIds && level.questionIds.length > 0) {
-    return level.questionIds.length;
-  }
-  if (level.levelNumber <= 4) return 5;
-  if (level.levelNumber <= 7) return 6;
-  return 7;
-};
-
-const getRegionName = (regionId: string): string => {
-  switch (regionId) {
-    case "uk":
-      return "United Kingdom";
-    default:
-      return regionId;
-  }
-};
-
-const getTodayDateString = (): string => {
-  // ISO date "YYYY-MM-DD" in UTC; good enough for now
-  return new Date().toISOString().slice(0, 10);
-};
-
-const computeUpdatedStreak = (
-  profile: PlayerProfile
-): {
-  newDailyStreak: number;
-  newLastActiveAt: string;
-} => {
-  const today = getTodayDateString();
-  const last = profile.lastActiveAt;
-
-  if (!last) {
-    return { newDailyStreak: 1, newLastActiveAt: today };
-  }
-
-  if (last === today) {
-    return { newDailyStreak: profile.dailyStreak, newLastActiveAt: last };
-  }
-
-  const lastDate = new Date(`${last}T00:00:00Z`);
-  const todayDate = new Date(`${today}T00:00:00Z`);
-  const diffMs = todayDate.getTime() - lastDate.getTime();
-  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 1) {
-    return {
-      newDailyStreak: profile.dailyStreak + 1,
-      newLastActiveAt: today,
-    };
-  }
-
-  return {
-    newDailyStreak: 1,
-    newLastActiveAt: today,
-  };
-};
 
 export default function App() {
   const [screen, setScreen] = React.useState<Screen>("splash");
@@ -132,17 +71,6 @@ export default function App() {
     linkGuestProfileToAuthUser,
   } = usePlayerProfile();
 
-  const [session, setSession] = React.useState<GameSession | null>(null);
-  const [lastAnswerTime] = React.useState(1500);
-  const [selectedOption, setSelectedOption] = React.useState<string | null>(
-    null
-  );
-  const [selectedLevelId, setSelectedLevelId] = React.useState<LevelId | null>(
-    null
-  );
-  const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(
-    null
-  );
   const {
     progress,
     loadingProgress,
@@ -151,28 +79,56 @@ export default function App() {
     getLevelsForVenueWithStatus,
   } = useProgress({ activeProfileId, profileReady });
 
-  const [audiencePoll, setAudiencePoll] = React.useState<Record<
-    string,
-    number
-  > | null>(null);
-  const [askQuizzersRemaining, setAskQuizzersRemaining] = React.useState(3);
-  const [usedAskQuizzersThisQuestion, setUsedAskQuizzersThisQuestion] =
-    React.useState(false);
-  const [fiftyFiftyRemaining, setFiftyFiftyRemaining] = React.useState(1);
-  const [usedFiftyFiftyThisQuestion, setUsedFiftyFiftyThisQuestion] =
-    React.useState(false);
-  const [hiddenOptions, setHiddenOptions] = React.useState<string[]>([]);
-  const [lastRewardSummary, setLastRewardSummary] =
-    React.useState<RewardSummary | null>(null);
-  const [lockedLevelInfo, setLockedLevelInfo] = React.useState<{
-    venueName: string;
-    levelNumber: number;
-    requiredLevelNumber: number;
-  } | null>(null);
+  const {
+    session,
+    setSession,
+    selectedOption,
+    setSelectedOption,
+    selectedLevelId,
+    setSelectedLevelId,
+    audiencePoll,
+    setAudiencePoll,
+    hiddenOptions,
+    setHiddenOptions,
+    askQuizzersRemaining,
+    setAskQuizzersRemaining,
+    usedAskQuizzersThisQuestion,
+    setUsedAskQuizzersThisQuestion,
+    fiftyFiftyRemaining,
+    setFiftyFiftyRemaining,
+    usedFiftyFiftyThisQuestion,
+    setUsedFiftyFiftyThisQuestion,
+    lastRewardSummary,
+    setLastRewardSummary,
+    lockedLevelInfo,
+    setLockedLevelInfo,
+    prepareSessionForLevel,
+    initialiseLevelSession,
+    resetForRestart,
+    resetSessionForExit,
+    applyUpdatedSessionForAnswer,
+  } = useGameSession();
+
+  const {
+    regions,
+    getVenuesForRegion,
+    getLevelById,
+    getVenueById,
+    getOrderedVenueLevels,
+  } = useGameData();
+  const {
+    handleBuyAskQuizzersUpgrade,
+    handleBuyFiftyFiftyUpgrade,
+    handleBuyHeart,
+  } = useShopHandlers({ profile, saveProfile });
+
+  const [lastAnswerTime] = React.useState(1500);
+  const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(
+    null
+  );
   const [selectedRegionId, setSelectedRegionId] = React.useState<string | null>(
     null
   );
-
   const QUESTION_TIME_LIMIT_SECONDS = 10;
 
   const handleSelectRegion = (regionId: string) => {
@@ -182,89 +138,6 @@ export default function App() {
     setScreen("venues");
   };
 
-  const buyShopItem = React.useCallback(
-    (itemId: ShopItemId) => {
-      const item = SHOP_ITEMS[itemId];
-      if (!item) return;
-
-      if (profile.coins < item.cost) {
-        // later: show "not enough coins" toast
-        return;
-      }
-
-      let next: PlayerProfile = {
-        ...profile,
-        coins: profile.coins - item.cost,
-      };
-
-      switch (itemId) {
-        case "HEART": {
-          const max = item.max ?? MAX_HEARTS;
-          if (next.hearts >= max) {
-            return;
-          }
-          next.hearts = Math.min(max, next.hearts + 1);
-          break;
-        }
-        case "ASK_QUIZZERS": {
-          next.askQuizzersOwned = next.askQuizzersOwned + 1;
-          break;
-        }
-        case "FIFTY_FIFTY": {
-          next.fiftyFiftyOwned = next.fiftyFiftyOwned + 1;
-          break;
-        }
-      }
-
-      void saveProfile(next);
-    },
-    [profile, saveProfile]
-  );
-
-  const handleBuyAskQuizzersUpgrade = () => {
-    buyShopItem("ASK_QUIZZERS");
-  };
-
-  const handleBuyFiftyFiftyUpgrade = () => {
-    buyShopItem("FIFTY_FIFTY");
-  };
-
-  const handleBuyHeart = () => {
-    buyShopItem("HEART");
-  };
-
-  const allVenues = React.useMemo(
-    () => [...VENUES].sort((a, b) => a.order - b.order),
-    []
-  );
-
-  const getVenuesForRegion = (regionId: string | null) =>
-    regionId ? allVenues.filter((v) => v.regionId === regionId) : [];
-
-  const getLevelById = (id: LevelId | null) =>
-    id ? LEVELS.find((l) => l.id === id) ?? null : null;
-
-  const getVenueById = (id: string | null) =>
-    id ? allVenues.find((v) => v.id === id) ?? null : null;
-
-  const regions = React.useMemo(() => {
-    const map: Record<
-      string,
-      { id: string; name: string; venueCount: number }
-    > = {};
-    allVenues.forEach((v) => {
-      if (!map[v.regionId]) {
-        map[v.regionId] = {
-          id: v.regionId,
-          name: getRegionName(v.regionId),
-          venueCount: 0,
-        };
-      }
-      map[v.regionId].venueCount += 1;
-    });
-    return Object.values(map).sort((a, b) => a.name.localeCompare(b.name));
-  }, [allVenues]);
-
   const startLevel = (levelId: LevelId) => {
     const level = getLevelById(levelId);
     if (!level) return;
@@ -272,9 +145,7 @@ export default function App() {
     const status = getLevelStatus(levelId);
     if (status === "locked") {
       const venue = getVenueById(selectedVenueId);
-      const venueLevels = LEVELS.filter(
-        (l) => l.venueId === selectedVenueId
-      ).sort((a, b) => a.levelNumber - b.levelNumber);
+      const venueLevels = getOrderedVenueLevels(selectedVenueId);
 
       const thisLevel = venueLevels.find((l) => l.id === levelId);
       const prevLevel = venueLevels.find(
@@ -298,29 +169,15 @@ export default function App() {
 
     const newSession = createSessionForLevel(level);
     setSelectedLevelId(levelId);
-    setSession(newSession);
-    setSelectedOption(null);
-
-    setAskQuizzersRemaining(profile.askQuizzersOwned);
-    setUsedAskQuizzersThisQuestion(false);
-    setAudiencePoll(null);
-
-    setFiftyFiftyRemaining(profile.fiftyFiftyOwned);
-    setUsedFiftyFiftyThisQuestion(false);
-    setHiddenOptions([]);
+    initialiseLevelSession(newSession, profile);
 
     clearTimer();
     setScreen("playing");
   };
 
   const applyAnswerOutcome = (updated: GameSession, level: LevelConfig) => {
-    setSelectedOption(null);
-    setSession(updated);
-
-    setAudiencePoll(null);
-    setUsedAskQuizzersThisQuestion(false);
-    setUsedFiftyFiftyThisQuestion(false);
-    setHiddenOptions([]);
+    // Update session + clear per-question state, then stop timer
+    applyUpdatedSessionForAnswer(updated);
     clearTimer();
 
     const totalCorrect = updated.answers.filter((a) => a.correct).length;
@@ -466,50 +323,16 @@ export default function App() {
     }
   };
 
-  const handleAnswer = (optionId: string) => {
-    if (selectedOption) return;
-    if (!session || !selectedLevelId) return;
-
-    const level = getLevelById(selectedLevelId);
-    if (!level) return;
-
-    setSelectedOption(optionId);
-
-    const updated = answerCurrentQuestion(
-      session,
-      level,
-      optionId,
-      lastAnswerTime
-    );
-
-    setTimeout(() => {
-      applyAnswerOutcome(updated, level);
-    }, 800);
-  };
-
-  const handleTimeExpired = () => {
-    if (!session || !selectedLevelId) return;
-
-    const level = getLevelById(selectedLevelId);
-    if (!level) return;
-
-    const question = getCurrentQuestion(session);
-    if (!question) return;
-
-    const wrongOption = question.options.find(
-      (o) => o.id !== question.correctOptionId
-    );
-    if (!wrongOption) return;
-
-    const updated = answerCurrentQuestion(
-      session,
-      level,
-      wrongOption.id,
-      QUESTION_TIME_LIMIT_SECONDS * 1000
-    );
-
-    applyAnswerOutcome(updated, level);
-  };
+  const { handleAnswer, handleTimeExpired } = useAnswerHandlers({
+    session,
+    selectedLevelId,
+    selectedOption,
+    setSelectedOption,
+    lastAnswerTime,
+    questionTimeLimitSeconds: QUESTION_TIME_LIMIT_SECONDS,
+    getLevelById,
+    onAnswerOutcome: applyAnswerOutcome,
+  });
 
   const { timeLeft, clearTimer } = useQuestionTimer({
     isActive:
@@ -605,30 +428,15 @@ export default function App() {
   const handleRestart = () => {
     if (!selectedLevelId) return;
 
-    setLastRewardSummary(null);
-    setAudiencePoll(null);
-    setAskQuizzersRemaining(profile.askQuizzersOwned);
-    setUsedAskQuizzersThisQuestion(false);
-
-    setFiftyFiftyRemaining(profile.fiftyFiftyOwned);
-    setUsedFiftyFiftyThisQuestion(false);
-    setHiddenOptions([]);
-
+    // Reset per-run state, then start the level again
+    prepareSessionForLevel(profile);
+    resetForRestart(profile);
     clearTimer();
     startLevel(selectedLevelId);
   };
 
   const handleBackToLevels = () => {
-    setSession(null);
-    setSelectedOption(null);
-    setSelectedLevelId(null);
-    setAudiencePoll(null);
-    setAskQuizzersRemaining(0);
-    setUsedAskQuizzersThisQuestion(false);
-    setFiftyFiftyRemaining(0);
-    setUsedFiftyFiftyThisQuestion(false);
-    setHiddenOptions([]);
-    setLastRewardSummary(null);
+    resetSessionForExit();
     clearTimer();
     setScreen("levels");
   };

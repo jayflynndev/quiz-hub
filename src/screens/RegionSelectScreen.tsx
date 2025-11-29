@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -27,85 +28,157 @@ export const RegionSelectScreen: React.FC<RegionSelectScreenProps> = ({
 }) => {
   const renderItem = ({ item }: { item: RegionItem }) => (
     <TouchableOpacity
-      style={styles.regionButton}
+      style={styles.regionCard}
       onPress={() => onSelectRegion(item.id)}
     >
-      <View style={styles.regionRow}>
+      <View style={styles.regionHeaderRow}>
         <Text style={styles.regionName}>{item.name}</Text>
-        <Text style={styles.regionMeta}>{item.venueCount} venues</Text>
+        <View style={styles.venueBadge}>
+          <Text style={styles.venueBadgeText}>
+            {item.venueCount} {item.venueCount === 1 ? "venue" : "venues"}
+          </Text>
+        </View>
       </View>
+      <Text style={styles.regionHint}>Tap to enter this region</Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Select a Region</Text>
-      <Text style={styles.subHeader}>Where in the quiz world?</Text>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "right", "bottom", "left"]}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Choose Your Region</Text>
+        <Text style={styles.subtitle}>
+          Start your journey in one part of the quiz world.
+        </Text>
+      </View>
 
+      {/* Regions list */}
       <FlatList
         data={regions}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        style={styles.list}
+        contentContainerStyle={
+          regions.length === 0 ? styles.emptyListContainer : styles.listContent
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No regions available yet. Check back soon!
+          </Text>
+        }
+        showsVerticalScrollIndicator={false}
       />
 
-      <TouchableOpacity style={styles.backButton} onPress={onBackToHome}>
-        <Text style={styles.backButtonText}>Back to Home</Text>
-      </TouchableOpacity>
+      {/* Footer / Back */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.backButton} onPress={onBackToHome}>
+          <Text style={styles.backButtonText}>Back to Home</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
 
+const BACKGROUND = "#050816";
+const CARD_BG = "#020617";
+const BORDER = "#1F2937";
+const ACCENT = "#8B5CF6";
+const TEXT_MAIN = "#F9FAFB";
+const TEXT_MUTED = "#9CA3AF";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111827",
-    padding: 16,
+    backgroundColor: BACKGROUND,
+    paddingTop: Platform.OS === "ios" ? 44 : 0,
   },
   header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
+  },
+  title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#F9FAFB",
-    marginBottom: 4,
+    color: TEXT_MAIN,
   },
-  subHeader: {
+  subtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: TEXT_MUTED,
+  },
+  listContent: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
     fontSize: 14,
-    color: "#9CA3AF",
-    marginBottom: 16,
+    color: TEXT_MUTED,
+    textAlign: "center",
   },
-  list: {
-    flex: 1,
+  regionCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: BORDER,
   },
-  regionButton: {
-    backgroundColor: "#1F2937",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  regionRow: {
+  regionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
   regionName: {
-    color: "#F9FAFB",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    color: TEXT_MAIN,
   },
-  regionMeta: {
-    color: "#9CA3AF",
-    fontSize: 13,
+  venueBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: ACCENT,
+  },
+  venueBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#EDE9FE",
+  },
+  regionHint: {
+    marginTop: 6,
+    fontSize: 12,
+    color: TEXT_MUTED,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
   backButton: {
-    backgroundColor: "#374151",
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 16,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#374151",
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#020617",
   },
   backButtonText: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+    fontSize: 13,
+    fontWeight: "500",
+    color: TEXT_MAIN,
   },
 });

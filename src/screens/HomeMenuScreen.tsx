@@ -1,6 +1,12 @@
+// src/screens/HomeMenuScreen.tsx
 import * as React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 
 interface HomeMenuScreenProps {
   onPlaySinglePlayer: () => void;
@@ -16,83 +22,196 @@ export const HomeMenuScreen: React.FC<HomeMenuScreenProps> = ({
   onOpenShop,
 }) => {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Jay&apos;s Quiz Odyssey</Text>
-      <Text style={styles.subHeader}>Prototype · v0.1</Text>
+    <View style={styles.container}>
+      {/* Top section: title + tagline */}
+      <View style={styles.header}>
+        <Text style={styles.logoText}>QUIZ HUB</Text>
+        <Text style={styles.tagline}>
+          Build your quiz empire, one venue at a time.
+        </Text>
+      </View>
 
-      <View style={styles.menu}>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={onPlaySinglePlayer}
-        >
-          <Text style={styles.buttonText}>Play (Single Player)</Text>
-        </TouchableOpacity>
+      {/* Middle section: main actions */}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.primaryCard}>
+          <Text style={styles.sectionLabel}>Single Player</Text>
+          <Text style={styles.sectionDescription}>
+            Progress through venues, earn XP and coins, and unlock tougher
+            levels.
+          </Text>
+          <TouchableOpacity
+            style={[styles.button, styles.primaryButton]}
+            onPress={onPlaySinglePlayer}
+          >
+            <Text style={[styles.buttonText, styles.primaryButtonText]}>
+              Play Now
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={styles.disabledButton}
-          onPress={onOpenMultiplayer}
-        >
-          <Text style={styles.buttonText}>Multiplayer (Coming Soon)</Text>
-        </TouchableOpacity>
+        <View style={styles.row}>
+          <View style={styles.halfCard}>
+            <Text style={styles.sectionLabel}>Multiplayer</Text>
+            <Text style={styles.sectionDescriptionSmall}>
+              Coming soon: challenge friends and climb global leaderboards.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.disabledButton]}
+              onPress={onOpenMultiplayer}
+              disabled
+            >
+              <Text style={[styles.buttonText, styles.disabledButtonText]}>
+                Coming Soon
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={onOpenProfile}
-        >
-          <Text style={styles.buttonText}>Profile</Text>
-        </TouchableOpacity>
+          <View style={styles.halfCard}>
+            <Text style={styles.sectionLabel}>Shop</Text>
+            <Text style={styles.sectionDescriptionSmall}>
+              Trade coins for hearts and lifelines to keep your streak alive.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={onOpenShop}
+            >
+              <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+                Open Shop
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={onOpenShop}>
-          <Text style={styles.buttonText}>Shop</Text>
+      {/* Bottom: profile entry */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.profileButton} onPress={onOpenProfile}>
+          <Text style={styles.profileButtonText}>View Profile & Stats</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
+
+const BACKGROUND = "#050816";
+const CARD_BG = "#111827";
+const CARD_ALT_BG = "#020617";
+const ACCENT = "#8B5CF6";
+const ACCENT_SOFT = "#C4B5FD";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111827",
-    padding: 24,
+    backgroundColor: BACKGROUND,
   },
   header: {
-    fontSize: 26,
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  logoText: {
+    fontSize: 28,
     fontWeight: "800",
-    color: "#F9FAFB",
-    marginBottom: 4,
+    letterSpacing: 3,
+    color: "#FFFFFF",
   },
-  subHeader: {
-    fontSize: 14,
+  tagline: {
+    marginTop: 6,
+    fontSize: 13,
     color: "#9CA3AF",
-    marginBottom: 24,
   },
-  menu: {
-    marginTop: 16,
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  primaryCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#1F2937",
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  halfCard: {
+    flex: 1,
+    backgroundColor: CARD_ALT_BG,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#1F2937",
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: ACCENT_SOFT,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#E5E7EB",
+  },
+  sectionDescriptionSmall: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#D1D5DB",
+  },
+  button: {
+    marginTop: 14,
+    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButton: {
-    backgroundColor: "#7C3AED",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 12,
+    backgroundColor: ACCENT,
+  },
+  primaryButtonText: {
+    color: "#FFFFFF",
   },
   secondaryButton: {
-    backgroundColor: "#374151",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: ACCENT,
+    backgroundColor: "transparent",
+  },
+  secondaryButtonText: {
+    color: ACCENT_SOFT,
   },
   disabledButton: {
     backgroundColor: "#4B5563",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 12,
-    opacity: 0.7,
+  },
+  disabledButtonText: {
+    color: "#E5E7EB",
   },
   buttonText: {
-    color: "#F9FAFB",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    textAlign: "center",
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  profileButton: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#374151",
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#020617",
+  },
+  profileButtonText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#E5E7EB",
   },
 });

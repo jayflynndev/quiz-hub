@@ -198,20 +198,22 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
         let dataFromSupabase: any | null = null;
 
         if (authUserId) {
-          // Logged in: find profile by auth_user_id
+          // Logged in: find profile(s) by auth_user_id.
+          // There *might* be more than one row (ghost duplicates), so we
+          // avoid .maybeSingle() and simply pick the first.
           const { data, error } = await supabase
             .from("profiles")
             .select("*")
-            .eq("auth_user_id", authUserId)
-            .maybeSingle();
+            .eq("auth_user_id", authUserId);
 
           if (error) {
             console.warn("Supabase loadProfile by auth_user_id error", error);
           }
 
-          if (data) {
-            dataFromSupabase = data;
-            profileRowId = data.id as string;
+          if (data && data.length > 0) {
+            const primaryRow = data[0]; // For now, just use the first row
+            dataFromSupabase = primaryRow;
+            profileRowId = primaryRow.id as string;
           } else {
             // no profile yet for this auth user → fallback to guest id
             profileRowId = guestProfileId;
@@ -364,6 +366,27 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
       if (!guestProfileId) return;
 
       try {
+        // 1) Check if there is already a profile row for this auth user
+        const { data: existing, error: existingError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("auth_user_id", userId);
+
+        if (existingError) {
+          console.warn(
+            "linkGuestProfileToAuthUser: check existing profiles error",
+            existingError
+          );
+        }
+
+        if (existing && existing.length > 0) {
+          // We already have one or more rows for this auth_user_id.
+          // Do NOT create another duplicate auth row – just switch to that user.
+          setAuthUserId(userId);
+          return;
+        }
+
+        // 2) No existing auth-linked profile: safe to link the guest row
         const { error } = await supabase
           .from("profiles")
           .update({ auth_user_id: userId })
