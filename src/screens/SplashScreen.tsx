@@ -1,97 +1,100 @@
-// src/screens/SplashScreen.tsx
 import * as React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  Animated,
-} from "react-native";
+import { StyleSheet, Text, Animated, ImageBackground } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface SplashScreenProps {
   onFinish: () => void;
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
-  const opacity = React.useRef(new Animated.Value(0)).current;
-  const scale = React.useRef(new Animated.Value(0.9)).current;
+  const scale = React.useRef(new Animated.Value(1)).current;
+  const [dots, setDots] = React.useState("");
 
   React.useEffect(() => {
-    // Simple logo/title fade + scale in
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scale, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // Gentle breathing animation on the whole splash
+    const loopAnim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1.03,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loopAnim.start();
 
-    // After a short delay, move into the app
-    const timer = setTimeout(() => {
-      onFinish();
-    }, 1800); // ~1.8 seconds
+    // Loading dots animation
+    const dotsInterval = setInterval(() => {
+      setDots((prev) => {
+        if (prev.length >= 3) return "";
+        return prev + ".";
+      });
+    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [onFinish, opacity, scale]);
+    // Auto-advance after 10 seconds
+    const timeout = setTimeout(onFinish, 10000);
+
+    return () => {
+      loopAnim.stop();
+      clearInterval(dotsInterval);
+      clearTimeout(timeout);
+    };
+  }, [onFinish, scale]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Animated.View
-        style={[
-          styles.logoContainer,
-          {
-            opacity,
-            transform: [{ scale }],
-          },
-        ]}
+        style={[styles.animatedWrapper, { transform: [{ scale }] }]}
       >
-        <Text style={styles.logoText}>QUIZ HUB</Text>
-        <Text style={styles.subtitle}>Quizzing around the world</Text>
-      </Animated.View>
+        <ImageBackground
+          // ⬇️ update the path/filename to match where you saved the image
+          source={require("../../assets/branding/splash.png")}
+          style={styles.bg}
+          resizeMode="cover"
+        >
+          {/* Optional purple tint to keep it on-brand */}
+          <Animated.View style={styles.overlay} />
 
-      <View style={styles.footer}>
-        <ActivityIndicator size="small" />
-        <Text style={styles.loadingText}>Loading your quiz world...</Text>
-      </View>
-    </View>
+          <Animated.View style={styles.bottomArea}>
+            <Text style={styles.loadingText}>Loading your Quiz Hub{dots}</Text>
+          </Animated.View>
+        </ImageBackground>
+      </Animated.View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#050816", // deep dark background
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
+    backgroundColor: "#000", // fallback while image loads
   },
-  logoContainer: {
-    alignItems: "center",
+  animatedWrapper: {
+    flex: 1,
   },
-  logoText: {
-    fontSize: 32,
-    fontWeight: "800",
-    letterSpacing: 4,
-    color: "#FFFFFF",
+  bg: {
+    flex: 1,
+    justifyContent: "flex-end",
   },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    color: "#C4B5FD", // soft purple accent
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(60, 0, 100, 0.35)", // subtle purple tint
   },
-  footer: {
-    position: "absolute",
-    bottom: 40,
+  bottomArea: {
+    width: "100%",
+    paddingVertical: 24,
     alignItems: "center",
   },
   loadingText: {
-    marginTop: 8,
-    fontSize: 12,
-    color: "#9CA3AF",
+    fontSize: 16,
+    color: "#F9FAFB",
+    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
 });
