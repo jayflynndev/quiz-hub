@@ -2,12 +2,13 @@ import * as React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   FlatList,
-  Platform,
+  TouchableOpacity,
+  Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StageScreen } from "../ui/StageScreen"; // adjust path if needed
+import { NeonButton } from "../ui/NeonButton";
 
 interface VenueItem {
   id: string;
@@ -31,25 +32,28 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
   onBackToHome,
 }) => {
   const renderItem = ({ item }: { item: VenueItem }) => (
-    <TouchableOpacity
-      style={styles.venueCard}
+    <Pressable
       onPress={() => onSelectVenue(item.id)}
-      activeOpacity={0.85}
+      style={({ pressed }) => [
+        styles.venueCardOuter,
+        pressed && styles.venueCardOuterPressed,
+      ]}
     >
-      <View style={styles.venueHeaderRow}>
-        <Text style={styles.venueName}>{item.name}</Text>
+      <View style={styles.venueCardInner}>
+        <View style={styles.venueHighlightStrip} />
+        <View style={styles.venueHeaderRow}>
+          <Text style={styles.venueName}>{item.name}</Text>
+        </View>
+        <Text style={styles.venueHint}>Tap to enter this venue</Text>
       </View>
-      <Text style={styles.venueHint}>Tap to enter this venue</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={["top", "right", "bottom", "left"]}
-    >
+    <StageScreen>
       {/* Header */}
       <View style={styles.header}>
+        <Text style={styles.appTag}>Quiz Venues</Text>
         <Text style={styles.title}>Pick a Venue</Text>
         <Text style={styles.subtitle}>
           Each venue has 10 levels. Start where you fancy playing tonight.
@@ -74,12 +78,13 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
 
       {/* Footer actions */}
       <View style={styles.footer}>
+        {/* Neon primary CTA */}
         <TouchableOpacity
-          style={styles.primaryButton}
           onPress={onOpenShop}
           activeOpacity={0.9}
+          style={{ marginBottom: 8 }}
         >
-          <Text style={styles.primaryButtonText}>Open Shop</Text>
+          <NeonButton label="Open Shop" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -99,31 +104,32 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
           <Text style={styles.debugText}>Refill Hearts (dev)</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </StageScreen>
   );
 };
 
-const BACKGROUND = "#050816";
 const CARD_BG = "#020617";
-const BORDER = "#1F2937";
 const ACCENT = "#8B5CF6";
 const TEXT_MAIN = "#F9FAFB";
 const TEXT_MUTED = "#9CA3AF";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-    paddingTop: Platform.OS === "ios" ? 44 : 0, // avoid notch on first load
-  },
+  // Header
   header: {
     paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingTop: 16,
+    paddingBottom: 10,
+  },
+  appTag: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    marginBottom: 2,
   },
   title: {
     fontSize: 22,
-    fontWeight: "700",
+    fontWeight: "800",
     color: TEXT_MAIN,
   },
   subtitle: {
@@ -131,9 +137,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT_MUTED,
   },
+
+  // List
   listContent: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 16,
   },
   emptyListContainer: {
@@ -148,13 +156,38 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
     textAlign: "center",
   },
-  venueCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
+
+  // Venue cards
+  venueCardOuter: {
+    borderRadius: 20,
+    padding: 2,
+    marginBottom: 14,
+    backgroundColor: "rgba(15,23,42,0.9)",
+    shadowColor: "#000",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  venueCardOuterPressed: {
+    transform: [{ scale: 0.97 }],
+  },
+  venueCardInner: {
+    borderRadius: 18,
     padding: 16,
-    marginBottom: 12,
+    backgroundColor: CARD_BG,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "rgba(148,163,255,0.4)",
+    overflow: "hidden",
+  },
+  venueHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -10,
+    right: -10,
+    height: 32,
+    backgroundColor: "rgba(139,92,246,0.35)",
+    opacity: 0.6,
   },
   venueHeaderRow: {
     flexDirection: "row",
@@ -163,14 +196,16 @@ const styles = StyleSheet.create({
   },
   venueName: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
     color: TEXT_MAIN,
   },
   venueHint: {
-    marginTop: 6,
+    marginTop: 10,
     fontSize: 12,
     color: TEXT_MUTED,
   },
+
+  // Footer
   footer: {
     paddingHorizontal: 24,
     paddingBottom: 24,
@@ -182,24 +217,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
+    shadowColor: "#8B5CF6",
+    shadowOpacity: 0.7,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
   primaryButtonText: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#F9FAFF",
   },
   secondaryButton: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#374151",
+    borderColor: "rgba(148,163,255,0.7)",
     paddingVertical: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#020617",
+    backgroundColor: "rgba(15,23,42,0.95)",
   },
   secondaryButtonText: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
     color: TEXT_MAIN,
   },
   debugButton: {

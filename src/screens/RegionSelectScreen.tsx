@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Platform,
+  Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StageScreen } from "../ui/StageScreen"; // adjust path if needed
 
 interface RegionItem {
   id: string;
@@ -28,28 +28,30 @@ export const RegionSelectScreen: React.FC<RegionSelectScreenProps> = ({
 }) => {
   const renderItem = ({ item }: { item: RegionItem }) => (
     <TouchableOpacity
-      style={styles.regionCard}
       onPress={() => onSelectRegion(item.id)}
+      activeOpacity={0.85}
+      style={styles.regionCardOuter}
     >
-      <View style={styles.regionHeaderRow}>
-        <Text style={styles.regionName}>{item.name}</Text>
-        <View style={styles.venueBadge}>
-          <Text style={styles.venueBadgeText}>
-            {item.venueCount} {item.venueCount === 1 ? "venue" : "venues"}
-          </Text>
+      <View style={styles.regionCardInner}>
+        <View style={styles.regionHighlightStrip} />
+        <View style={styles.regionHeaderRow}>
+          <Text style={styles.regionName}>{item.name}</Text>
+          <View style={styles.venueBadge}>
+            <Text style={styles.venueBadgeText}>
+              {item.venueCount} {item.venueCount === 1 ? "venue" : "venues"}
+            </Text>
+          </View>
         </View>
+        <Text style={styles.regionHint}>Tap to enter this region</Text>
       </View>
-      <Text style={styles.regionHint}>Tap to enter this region</Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={["top", "right", "bottom", "left"]}
-    >
+    <StageScreen>
       {/* Header */}
       <View style={styles.header}>
+        <Text style={styles.appTag}>Quiz World</Text>
         <Text style={styles.title}>Choose Your Region</Text>
         <Text style={styles.subtitle}>
           Start your journey in one part of the quiz world.
@@ -78,31 +80,31 @@ export const RegionSelectScreen: React.FC<RegionSelectScreenProps> = ({
           <Text style={styles.backButtonText}>Back to Home</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </StageScreen>
   );
 };
 
-const BACKGROUND = "#050816";
 const CARD_BG = "#020617";
-const BORDER = "#1F2937";
 const ACCENT = "#8B5CF6";
 const TEXT_MAIN = "#F9FAFB";
 const TEXT_MUTED = "#9CA3AF";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-    paddingTop: Platform.OS === "ios" ? 44 : 0,
-  },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
+  appTag: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    marginBottom: 2,
   },
   title: {
     fontSize: 22,
-    fontWeight: "700",
+    fontWeight: "800",
     color: TEXT_MAIN,
   },
   subtitle: {
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 16,
   },
   emptyListContainer: {
@@ -127,13 +129,37 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
     textAlign: "center",
   },
-  regionCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
+
+  // Region cards
+  regionCardOuter: {
+    borderRadius: 20,
+    padding: 2,
+    marginBottom: 14,
+    backgroundColor: "rgba(15,23,42,0.9)",
+    shadowColor: "#000",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  regionCardInner: {
+    borderRadius: 18,
     padding: 16,
-    marginBottom: 12,
+    backgroundColor: CARD_BG,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "rgba(148,163,255,0.35)",
+    overflow: "hidden",
+    borderBottomWidth: 2,
+    borderBottomColor: "rgba(139,92,246,0.35)",
+  },
+  regionHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -10,
+    right: -10,
+    height: 32,
+    backgroundColor: "rgba(79,70,229,0.4)",
+    opacity: 0.5,
   },
   regionHeaderRow: {
     flexDirection: "row",
@@ -142,14 +168,14 @@ const styles = StyleSheet.create({
   },
   regionName: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "800",
     color: TEXT_MAIN,
   },
   venueBadge: {
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: "#111827",
+    backgroundColor: "#020617",
     borderWidth: 1,
     borderColor: ACCENT,
   },
@@ -159,10 +185,11 @@ const styles = StyleSheet.create({
     color: "#EDE9FE",
   },
   regionHint: {
-    marginTop: 6,
+    marginTop: 12,
     fontSize: 12,
     color: TEXT_MUTED,
   },
+
   footer: {
     paddingHorizontal: 24,
     paddingBottom: 24,
@@ -170,15 +197,20 @@ const styles = StyleSheet.create({
   backButton: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#374151",
-    paddingVertical: 10,
+    borderColor: "rgba(148,163,255,0.7)",
+    paddingVertical: 11,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#020617",
+    backgroundColor: "rgba(15,23,42,0.95)",
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
   },
   backButtonText: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
     color: TEXT_MAIN,
   },
 });

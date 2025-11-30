@@ -7,8 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabaseClient";
+import { StageScreen } from "../ui/StageScreen";
+import { NeonButton } from "../ui/NeonButton";
 
 interface AuthScreenProps {
   onLinked: (userId: string) => void;
@@ -81,143 +82,186 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
   const disabled = !email || !password || loading;
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Global header to match other screens */}
-      <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
-      <Text style={styles.appSubtitle}>Sign in · Save your progress</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.header}>Save Your Progress</Text>
-        <Text style={styles.subHeader}>
-          Create an account or sign in to sync your quiz journey across devices.
+    <StageScreen>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.appTag}>Account</Text>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+        <Text style={styles.appSubtitle}>
+          Sign in to sync your quiz journey across devices.
         </Text>
+      </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#6B7280"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#6B7280"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+      {/* Card */}
+      <View style={styles.cardOuter}>
+        <View style={styles.cardInner}>
+          <View style={styles.cardHighlightStrip} />
 
-          {message && <Text style={styles.message}>{message}</Text>}
-          {loading && <ActivityIndicator style={{ marginBottom: 8 }} />}
+          <Text style={styles.headerText}>Save Your Progress</Text>
+          <Text style={styles.subHeader}>
+            Create an account or sign in to keep XP, coins and hearts linked to
+            you.
+          </Text>
 
-          <TouchableOpacity
-            style={[styles.primaryButton, disabled && styles.buttonDisabled]}
-            onPress={handleSignUp}
-            disabled={disabled}
-          >
-            <Text style={styles.buttonText}>Create Account</Text>
-          </TouchableOpacity>
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#6B7280"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#6B7280"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-          <TouchableOpacity
-            style={[styles.secondaryButton, disabled && styles.buttonDisabled]}
-            onPress={handleSignIn}
-            disabled={disabled}
-          >
-            <Text style={styles.buttonText}>Sign In</Text>
-          </TouchableOpacity>
+            {message && <Text style={styles.message}>{message}</Text>}
+            {loading && <ActivityIndicator style={styles.loadingIndicator} />}
+
+            {/* Create Account – Neon primary */}
+            <TouchableOpacity
+              onPress={handleSignUp}
+              disabled={disabled}
+              activeOpacity={0.9}
+              style={{ opacity: disabled ? 0.5 : 1, marginBottom: 8 }}
+            >
+              <NeonButton label="Create Account" />
+            </TouchableOpacity>
+
+            {/* Sign In – Neon alternate (purple) */}
+            <TouchableOpacity
+              onPress={handleSignIn}
+              disabled={disabled}
+              activeOpacity={0.9}
+              style={{ opacity: disabled ? 0.5 : 1 }}
+            >
+              <NeonButton label="Sign In" variant="purple" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Text style={styles.backButtonText}>Back to Profile</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+      {/* Back */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Text style={styles.backButtonText}>Back to Profile</Text>
+        </TouchableOpacity>
+      </View>
+    </StageScreen>
   );
 };
 
+const TEXT_MAIN = "#F9FAFB";
+const TEXT_MUTED = "#9CA3AF";
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#111827",
-    padding: 24,
+  // Header
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  appTag: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    marginBottom: 2,
   },
   appTitle: {
     fontSize: 22,
-    fontWeight: "700",
-    color: "#F9FAFB",
-    marginBottom: 4,
+    fontWeight: "800",
+    color: TEXT_MAIN,
   },
   appSubtitle: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    marginBottom: 16,
+    fontSize: 13,
+    color: TEXT_MUTED,
+    marginTop: 4,
   },
-  card: {
-    backgroundColor: "#1F2937",
-    borderRadius: 16,
-    padding: 16,
+
+  // Card
+  cardOuter: {
+    flex: 1,
+    paddingHorizontal: 24,
   },
-  header: {
+  cardInner: {
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    backgroundColor: "rgba(15,23,42,0.97)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
+    shadowColor: "#000",
+    shadowOpacity: 0.7,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
+    overflow: "hidden",
+    marginTop: 8,
+  },
+  cardHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -20,
+    right: -20,
+    height: 40,
+    backgroundColor: "rgba(59,130,246,0.45)",
+    opacity: 0.7,
+  },
+  headerText: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#F9FAFB",
+    fontWeight: "800",
+    color: TEXT_MAIN,
     marginBottom: 4,
   },
   subHeader: {
     fontSize: 13,
-    color: "#9CA3AF",
+    color: TEXT_MUTED,
     marginBottom: 12,
   },
+
+  // Form
   form: {
     marginTop: 8,
   },
   input: {
-    backgroundColor: "#111827",
-    color: "#F9FAFB",
-    borderRadius: 8,
+    backgroundColor: "#020617",
+    color: TEXT_MAIN,
+    borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#1F2937",
+    borderColor: "rgba(31,41,55,0.9)",
   },
   message: {
     color: "#FBBF24",
     marginBottom: 8,
     fontSize: 13,
   },
-  primaryButton: {
-    backgroundColor: "#3B82F6",
-    paddingVertical: 12,
-    borderRadius: 999,
+  loadingIndicator: {
     marginBottom: 8,
   },
-  secondaryButton: {
-    backgroundColor: "#4B5563",
-    paddingVertical: 12,
-    borderRadius: 999,
-    marginBottom: 4,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
+
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    paddingTop: 10,
   },
   backButton: {
-    marginTop: 24,
     paddingVertical: 10,
+    alignItems: "center",
   },
   backButtonText: {
-    color: "#9CA3AF",
+    color: TEXT_MUTED,
     fontSize: 14,
-    textAlign: "center",
   },
 });

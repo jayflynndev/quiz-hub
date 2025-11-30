@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StageScreen } from "../ui/StageScreen";
+import { NeonButton } from "../ui/NeonButton";
 
 interface OutOfHeartsScreenProps {
   hearts: number;
@@ -21,6 +22,7 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
 }) => {
   const [timeLeftMs, setTimeLeftMs] = React.useState<number | null>(null);
 
+  // ⬇️ same regen logic as before – untouched
   React.useEffect(() => {
     if (!lastHeartUpdateAt || hearts >= maxHearts) {
       setTimeLeftMs(null);
@@ -47,104 +49,236 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const heartsLabel = `${hearts}/${maxHearts}`;
+
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Global header to match other screens */}
-      <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
-      <Text style={styles.appSubtitle}>Energy · Hearts system</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.header}>You&apos;re Out of Hearts 💔</Text>
-        <Text style={styles.subHeader}>
-          Hearts are needed to attempt levels. Fail a level, lose a heart.
+    <StageScreen>
+      {/* Top header to match other screens */}
+      <View style={styles.header}>
+        <Text style={styles.appTag}>Energy System</Text>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+        <Text style={styles.appSubtitle}>
+          Hearts power your runs. Run out, and you&apos;ll need to recharge.
         </Text>
-        <Text style={styles.subHeader}>
-          Hearts: {hearts}/{maxHearts}
-        </Text>
+      </View>
 
-        {timeLeftMs !== null && hearts < maxHearts && (
-          <Text style={styles.timerText}>
-            Next heart in {formatTime(timeLeftMs)}
+      {/* Main card */}
+      <View style={styles.cardOuter}>
+        <View style={styles.cardInner}>
+          <View style={styles.cardHighlightStrip} />
+
+          <Text style={styles.headerText}>You&apos;re Out of Hearts 💔</Text>
+          <Text style={styles.subHeader}>
+            Hearts are needed to attempt levels. Fail a level, lose a heart.
           </Text>
-        )}
 
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.primaryButton} onPress={onGoToShop}>
-            <Text style={styles.buttonText}>Go to Shop</Text>
-          </TouchableOpacity>
+          {/* Hearts meter */}
+          <View style={styles.heartsRow}>
+            <Text style={styles.heartsLabel}>Hearts</Text>
+            <Text style={styles.heartsValue}>{heartsLabel}</Text>
+          </View>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={onBackToVenues}
-          >
-            <Text style={styles.buttonText}>Back to Venues</Text>
-          </TouchableOpacity>
+          <View style={styles.heartsBarOuter}>
+            <View
+              style={[
+                styles.heartsBarInner,
+                {
+                  width: `${
+                    Math.max(0, Math.min(1, hearts / Math.max(1, maxHearts))) *
+                    100
+                  }%`,
+                },
+              ]}
+            />
+          </View>
+
+          {timeLeftMs !== null && hearts < maxHearts && (
+            <View style={styles.timerPill}>
+              <Text style={styles.timerLabel}>Next heart in</Text>
+              <Text style={styles.timerValue}>{formatTime(timeLeftMs)}</Text>
+            </View>
+          )}
+
+          {/* Buttons */}
+          <View style={styles.buttons}>
+            {/* Neon primary CTA */}
+            <TouchableOpacity
+              onPress={onGoToShop}
+              activeOpacity={0.9}
+              style={{ marginBottom: 10 }}
+            >
+              <NeonButton label="Go to Shop" />
+            </TouchableOpacity>
+
+            {/* Secondary outline-style button */}
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={onBackToVenues}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.secondaryButtonText}>Back to Venues</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </SafeAreaView>
+    </StageScreen>
   );
 };
 
+const TEXT_MAIN = "#F9FAFB";
+const TEXT_MUTED = "#9CA3AF";
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#111827",
-    padding: 24,
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  appTag: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    marginBottom: 2,
   },
   appTitle: {
     fontSize: 22,
-    fontWeight: "700",
-    color: "#F9FAFB",
-    marginBottom: 4,
+    fontWeight: "800",
+    color: TEXT_MAIN,
   },
   appSubtitle: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    marginBottom: 16,
+    fontSize: 13,
+    color: TEXT_MUTED,
+    marginTop: 4,
   },
-  card: {
-    backgroundColor: "#1F2937",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
+
+  cardOuter: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+    paddingBottom: 32,
   },
-  header: {
+  cardInner: {
+    borderRadius: 22,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    backgroundColor: "rgba(15,23,42,0.97)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
+    shadowColor: "#000",
+    shadowOpacity: 0.7,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
+    overflow: "hidden",
+  },
+  cardHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -20,
+    right: -20,
+    height: 40,
+    backgroundColor: "rgba(220,38,38,0.4)",
+    opacity: 0.7,
+  },
+
+  headerText: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#F9FAFB",
-    marginBottom: 8,
+    fontWeight: "800",
+    color: TEXT_MAIN,
     textAlign: "center",
+    marginBottom: 8,
   },
   subHeader: {
     fontSize: 14,
-    color: "#9CA3AF",
-    marginBottom: 4,
+    color: TEXT_MUTED,
     textAlign: "center",
+    marginBottom: 16,
   },
-  timerText: {
-    fontSize: 16,
-    color: "#FBBF24",
-    marginTop: 8,
-    textAlign: "center",
+
+  heartsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
   },
-  buttons: {
-    marginTop: 24,
+  heartsLabel: {
+    fontSize: 13,
+    color: TEXT_MUTED,
   },
-  primaryButton: {
-    backgroundColor: "#7C3AED",
-    paddingVertical: 12,
+  heartsValue: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+  },
+  heartsBarOuter: {
+    height: 10,
     borderRadius: 999,
+    backgroundColor: "rgba(31,41,55,0.9)",
+    overflow: "hidden",
     marginBottom: 12,
   },
-  secondaryButton: {
-    backgroundColor: "#374151",
-    paddingVertical: 12,
+  heartsBarInner: {
+    height: "100%",
     borderRadius: 999,
+    backgroundColor: "#F97316",
   },
-  buttonText: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    textAlign: "center",
+
+  timerPill: {
+    alignSelf: "center",
+    marginTop: 6,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: "rgba(30,64,175,0.95)",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#FBBF24",
+  },
+  timerLabel: {
+    fontSize: 12,
+    color: "#FEF9C3",
+    marginRight: 6,
+  },
+  timerValue: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#FEF9C3",
+  },
+
+  buttons: {
+    marginTop: 22,
+  },
+  // primaryButton styles kept in case you still use them elsewhere
+  primaryButton: {
+    borderRadius: 999,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#8B5CF6",
+    shadowColor: "#8B5CF6",
+    shadowOpacity: 0.8,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
+    marginBottom: 10,
+  },
+  primaryButtonText: {
+    color: "#F9FAFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  secondaryButton: {
+    borderRadius: 999,
+    paddingVertical: 11,
+    alignItems: "center",
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.8)",
+  },
+  secondaryButtonText: {
+    color: TEXT_MAIN,
+    fontSize: 14,
     fontWeight: "600",
   },
 });

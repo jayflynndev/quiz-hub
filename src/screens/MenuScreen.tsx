@@ -3,11 +3,12 @@ import * as React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   FlatList,
+  Pressable,
+  TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StageScreen } from "../ui/StageScreen";
 import type { LevelConfig, LevelId, LevelProgressStatus } from "../types/game";
 
 interface LevelWithStatus extends LevelConfig {
@@ -43,112 +44,178 @@ export const MenuScreen: React.FC<MenuScreenProps> = ({
     const questionCount = getPlannedQuestionCountForMenu(item);
 
     return (
-      <TouchableOpacity
-        style={[
-          styles.levelCard,
-          isCompleted && styles.levelCardCompleted,
-          isLocked && styles.levelCardLocked,
+      <Pressable
+        onPress={() => !isLocked && onStartLevel(item.id)}
+        style={({ pressed }) => [
+          styles.levelCardOuter,
+          isCompleted && styles.levelCardOuterCompleted,
+          isLocked && styles.levelCardOuterLocked,
+          pressed && !isLocked && styles.levelCardOuterPressed,
         ]}
-        onPress={() => onStartLevel(item.id)}
       >
-        <View style={styles.levelRow}>
-          <View>
-            <Text style={styles.levelTitle}>Level {item.levelNumber}</Text>
-            <Text style={styles.levelMeta}>
-              {questionCount} questions · Pass {item.minCorrectToPass}
-            </Text>
+        <View style={styles.levelCardInner}>
+          <View style={styles.levelHighlightStrip} />
+          <View style={styles.levelRow}>
+            <View>
+              <Text style={styles.levelTitle}>Level {item.levelNumber}</Text>
+              <Text style={styles.levelMeta}>
+                {questionCount} questions · Pass {item.minCorrectToPass}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.statusPill,
+                isLocked && styles.statusPillLocked,
+                isCompleted && styles.statusPillCompleted,
+              ]}
+            >
+              <Text style={styles.statusPillText}>
+                {isLocked
+                  ? "Locked"
+                  : isCompleted
+                  ? "Completed"
+                  : "Ready to play"}
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>
-              {isLocked
-                ? "Locked"
-                : isCompleted
-                ? "Completed"
-                : "Ready to play"}
+          {isLocked && (
+            <Text style={styles.lockHint}>
+              Complete previous level to unlock.
             </Text>
-          </View>
+          )}
         </View>
-
-        {isLocked && (
-          <Text style={styles.lockHint}>Complete previous level to unlock</Text>
-        )}
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <StageScreen>
       {/* Header */}
-      <Text style={styles.header}>Venue</Text>
-      <Text style={styles.subHeader}>{venueName}</Text>
-
-      <View style={styles.content}>
+      <View style={styles.header}>
+        <Text style={styles.appTag}>Venue</Text>
+        <Text style={styles.venueName}>{venueName}</Text>
         <Text style={styles.sectionTitle}>Select a Level</Text>
+        <Text style={styles.subtitle}>
+          Levels unlock in order. Your progress is saved as you go.
+        </Text>
+      </View>
 
+      {/* Levels list */}
+      <View style={styles.listWrapper}>
         <FlatList
           data={levels}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 16 }}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
+      </View>
 
+      {/* Footer */}
+      <View style={styles.footer}>
         <Text style={styles.hintText}>
-          Levels unlock in order within each venue. Your progress is saved so
-          you can pick up where you left off.
+          Finish each level to light up the venue and push towards the next
+          region.
         </Text>
 
         <TouchableOpacity
           style={styles.backToVenuesButton}
           onPress={onBackToVenues}
+          activeOpacity={0.9}
         >
           <Text style={styles.backToVenuesText}>Back to Venues</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </StageScreen>
   );
 };
 
+const TEXT_MAIN = "#F9FAFB";
+const TEXT_MUTED = "#9CA3AF";
+const CARD_BG = "#020617";
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#020617",
-    padding: 16,
-  },
+  // Header
   header: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#9CA3AF",
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 10,
   },
-  subHeader: {
+  appTag: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  venueName: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#F9FAFB",
-    marginBottom: 16,
-  },
-  content: {
-    flex: 1,
+    color: TEXT_MAIN,
+    marginBottom: 4,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: "#E5E7EB",
-    marginBottom: 8,
   },
-  levelCard: {
-    backgroundColor: "#0F172A",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 10,
+  subtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: TEXT_MUTED,
+  },
+
+  // List
+  listWrapper: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 10,
+  },
+  listContent: {
+    paddingBottom: 16,
+  },
+
+  // Level cards
+  levelCardOuter: {
+    borderRadius: 20,
+    padding: 2,
+    marginBottom: 12,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    shadowColor: "#000",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  levelCardOuterPressed: {
+    transform: [{ scale: 0.97 }],
+  },
+  levelCardOuterCompleted: {
+    shadowColor: "#22C55E",
+    shadowOpacity: 0.9,
+  },
+  levelCardOuterLocked: {
+    opacity: 0.6,
+  },
+  levelCardInner: {
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: CARD_BG,
     borderWidth: 1,
-    borderColor: "#1E293B",
+    borderColor: "rgba(148,163,255,0.4)",
+    overflow: "hidden",
   },
-  levelCardCompleted: {
-    borderColor: "#22C55E",
-  },
-  levelCardLocked: {
-    opacity: 0.55,
+  levelHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -10,
+    right: -10,
+    height: 30,
+    backgroundColor: "rgba(79,70,229,0.4)",
+    opacity: 0.6,
   },
   levelRow: {
     flexDirection: "row",
@@ -156,48 +223,71 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   levelTitle: {
-    color: "#F9FAFB",
+    color: TEXT_MAIN,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   levelMeta: {
-    color: "#9CA3AF",
+    color: TEXT_MUTED,
     fontSize: 13,
     marginTop: 2,
   },
+
+  // Status pill
   statusPill: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.8)",
+  },
+  statusPillLocked: {
+    borderColor: "#F97316",
+    backgroundColor: "rgba(30,64,175,0.5)",
+  },
+  statusPillCompleted: {
+    borderColor: "#22C55E",
+    backgroundColor: "rgba(22,101,52,0.7)",
   },
   statusPillText: {
     color: "#E5E7EB",
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: "600",
   },
+
   lockHint: {
-    marginTop: 6,
-    color: "#9CA3AF",
+    marginTop: 8,
+    color: TEXT_MUTED,
     fontSize: 12,
   },
+
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
   hintText: {
-    marginTop: 12,
-    color: "#9CA3AF",
-    fontSize: 13,
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginBottom: 10,
   },
   backToVenuesButton: {
-    marginTop: 18,
-    backgroundColor: "#111827",
+    backgroundColor: "rgba(15,23,42,0.95)",
     borderRadius: 999,
     paddingVertical: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#374151",
+    borderColor: "rgba(148,163,255,0.8)",
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   backToVenuesText: {
-    color: "#F9FAFB",
+    color: TEXT_MAIN,
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

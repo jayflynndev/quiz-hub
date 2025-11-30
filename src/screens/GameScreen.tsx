@@ -1,7 +1,12 @@
 // src/screens/GameScreen.tsx
 import * as React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Pressable,
+} from "react-native";
 import type {
   GameSession,
   LevelConfig,
@@ -9,7 +14,8 @@ import type {
   PlayerProfile,
   RewardSummary,
 } from "../types/game";
-
+import { StageScreen } from "../ui/StageScreen";
+import { NeonButton } from "../ui/NeonButton";
 import { getCurrentQuestion, getQuestionProgress } from "../engine/gameEngine";
 
 interface GameScreenProps {
@@ -62,52 +68,101 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const outOfHearts = !isFinished && session.livesRemaining <= 0;
   const { currentIndex, total } = getQuestionProgress(session);
 
+  // ---- Edge: no question but not finished ----
   if (!question && !isFinished) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.header}>No question loaded</Text>
-        <TouchableOpacity style={styles.optionButton} onPress={onBackToMenu}>
-          <Text style={styles.optionText}>Back to Menu</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+      <StageScreen>
+        <View style={styles.centerStateContainer}>
+          <Text style={styles.centerTitle}>No question loaded</Text>
+          <TouchableOpacity
+            onPress={onBackToMenu}
+            activeOpacity={0.9}
+            style={{ marginTop: 16 }}
+          >
+            <NeonButton label="Back to Menu" style={{ alignSelf: "center" }} />
+          </TouchableOpacity>
+        </View>
+      </StageScreen>
     );
   }
 
+  // ---- Out of hearts (in-level) ----
   if (outOfHearts) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.header}>You're Out of Hearts 💔</Text>
-        <Text style={styles.subHeader}>
-          You need hearts to play levels. Come back later or buy more!
-        </Text>
+      <StageScreen>
+        <View style={styles.centerStateContainer}>
+          <Text style={styles.centerTitle}>You&apos;re Out of Hearts 💔</Text>
+          <Text style={styles.centerSubtitle}>
+            You need hearts to play levels. Come back later or buy more!
+          </Text>
 
-        <TouchableOpacity style={styles.optionButton} onPress={onBackToMenu}>
-          <Text style={styles.optionText}>Back to Level Select</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onBackToMenu}
+            activeOpacity={0.9}
+            style={{ marginTop: 16 }}
+          >
+            <NeonButton
+              label="Back to Level Select"
+              style={{ alignSelf: "center" }}
+            />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.optionButton, styles.shopButton]}
-          onPress={() => {
-            // later: navigate to ShopScreen
-            onBackToMenu(); // for now
-          }}
-        >
-          <Text style={styles.optionText}>Buy Hearts</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+          <TouchableOpacity
+            onPress={() => {
+              // later: navigate to ShopScreen
+              onBackToMenu(); // for now
+            }}
+            activeOpacity={0.9}
+            style={{ marginTop: 10 }}
+          >
+            <NeonButton
+              label="Buy Hearts"
+              variant="purple"
+              style={{ alignSelf: "center" }}
+            />
+          </TouchableOpacity>
+        </View>
+      </StageScreen>
     );
   }
 
+  const isPassed = session.status === "passed";
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.subHeader}>Score: {session.score}</Text>
-      {timeLeft !== null && (
-        <Text style={styles.timerText}>Time left: {timeLeft}s</Text>
-      )}
-      <Text style={styles.subHeader}>
-        Lv {profile.level} · XP {profile.xp}/{xpToNextLevel} · Coins{" "}
-        {profile.coins} · Hearts {profile.hearts}
-      </Text>
+    <StageScreen>
+      {/* Top scoreboard / HUD */}
+      <View style={styles.hudContainer}>
+        <View>
+          <Text style={styles.venueTag}>{venueName}</Text>
+          <Text style={styles.levelTag}>Level {level.levelNumber}</Text>
+        </View>
+
+        <View style={styles.hudStatsRow}>
+          <View style={styles.statPill}>
+            <Text style={styles.statLabel}>Score</Text>
+            <Text style={styles.statValue}>{session.score}</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={styles.statLabel}>Lv {profile.level}</Text>
+            <Text style={styles.statValue}>
+              {profile.xp}/{xpToNextLevel} XP
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.hudBottomRow}>
+        <View style={styles.hudInlineRow}>
+          <Text style={styles.hudMetaText}>Coins {profile.coins}</Text>
+          <Text style={styles.hudMetaText}>Hearts {profile.hearts}</Text>
+        </View>
+        {timeLeft !== null && (
+          <View style={styles.timerPill}>
+            <Text style={styles.timerLabel}>TIME</Text>
+            <Text style={styles.timerValue}>{timeLeft}s</Text>
+          </View>
+        )}
+      </View>
 
       {!isFinished && total > 0 && (
         <Text style={styles.questionProgress}>
@@ -115,24 +170,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </Text>
       )}
 
+      {/* Active question state */}
       {!isFinished && question && (
         <>
-          {/* Lifeline buttons */}
+          {/* Lifelines */}
           <View style={styles.lifelineRow}>
             {lifelinesAllowed.includes("ASK_QUIZZERS") &&
               askQuizzersRemaining > 0 && (
                 <TouchableOpacity
                   style={[
                     styles.lifelineButton,
-                    usedAskQuizzersThisQuestion
-                      ? styles.lifelineButtonUsed
-                      : null,
+                    usedAskQuizzersThisQuestion && styles.lifelineButtonUsed,
                   ]}
                   disabled={usedAskQuizzersThisQuestion}
                   onPress={onUseAskQuizzers}
+                  activeOpacity={0.85}
                 >
-                  <Text style={styles.lifelineText}>
-                    Ask Quizzers ({askQuizzersRemaining})
+                  <Text style={styles.lifelineLabel}>Ask Quizzers</Text>
+                  <Text style={styles.lifelineCount}>
+                    x{askQuizzersRemaining}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -142,15 +198,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 <TouchableOpacity
                   style={[
                     styles.lifelineButton,
-                    usedFiftyFiftyThisQuestion
-                      ? styles.lifelineButtonUsed
-                      : null,
+                    usedFiftyFiftyThisQuestion && styles.lifelineButtonUsed,
                   ]}
                   disabled={usedFiftyFiftyThisQuestion}
                   onPress={onUseFiftyFifty}
+                  activeOpacity={0.85}
                 >
-                  <Text style={styles.lifelineText}>
-                    50/50 ({fiftyFiftyRemaining})
+                  <Text style={styles.lifelineLabel}>50 / 50</Text>
+                  <Text style={styles.lifelineCount}>
+                    x{fiftyFiftyRemaining}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -166,14 +222,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               ))}
             </View>
           )}
-        </>
-      )}
 
-      {!isFinished && question && (
-        <View style={styles.content}>
-          <Text style={styles.question}>
-            Q{currentIndex + 1}. {question.text}
-          </Text>
+          {/* Question card + options */}
+          <View style={styles.questionCard}>
+            <View style={styles.questionHighlightStrip} />
+            <Text style={styles.questionText}>
+              Q{currentIndex + 1}. {question.text}
+            </Text>
+          </View>
 
           <View style={styles.optionsContainer}>
             {question.options
@@ -184,64 +240,48 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 const isOtherAfterSelect =
                   !!selectedOption && option.id !== selectedOption;
 
+                const disabled = !!selectedOption;
+
                 return (
-                  <TouchableOpacity
+                  <Pressable
                     key={option.id}
                     onPress={() => onAnswer(option.id)}
-                    style={[
+                    disabled={disabled}
+                    style={({ pressed }) => [
                       styles.optionButton,
-                      isSelected && isCorrect ? styles.correctOption : null,
-                      isSelected && !isCorrect ? styles.incorrectOption : null,
-                      isOtherAfterSelect ? styles.disabledOption : null,
+                      isSelected && isCorrect && styles.correctOption,
+                      isSelected && !isCorrect && styles.incorrectOption,
+                      isOtherAfterSelect && styles.disabledOption,
+                      pressed && !disabled && styles.optionButtonPressed,
                     ]}
-                    disabled={!!selectedOption}
                   >
                     <Text style={styles.optionText}>
                       {option.id}. {option.text}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 );
               })}
           </View>
-        </View>
+        </>
       )}
 
+      {/* Finished state */}
       {isFinished && (
-        <View style={styles.content}>
-          <Text style={styles.question}>
-            Level {session.status === "passed" ? "PASSED ✅" : "FAILED ❌"}
+        <View style={styles.finishedContainer}>
+          <View style={styles.resultBanner}>
+            <Text style={styles.resultBannerText}>
+              {isPassed ? "LEVEL PASSED ✅" : "LEVEL FAILED ❌"}
+            </Text>
+          </View>
+
+          <Text style={styles.finishedSub}>
+            Final score:{" "}
+            <Text style={styles.finishedSubEm}>{session.score}</Text>
           </Text>
-          <Text style={styles.subHeader}>Final score: {session.score}</Text>
-
-          {rewardSummary && session.status === "passed" && (
-            <View style={{ marginTop: 12 }}>
-              <Text style={styles.subHeader}>
-                XP Earned: {rewardSummary.xpEarned}
-              </Text>
-              <Text style={styles.subHeader}>
-                Coins Earned (incl. bonuses): {rewardSummary.coinsEarned}
-              </Text>
-              <Text style={styles.subHeader}>
-                Accuracy: {(rewardSummary.accuracy * 100).toFixed(0)}%
-              </Text>
-
-              {(rewardSummary.bonusAskQuizzers ?? 0) > 0 && (
-                <Text style={styles.subHeader}>
-                  Bonus Ask Quizzers: +{rewardSummary.bonusAskQuizzers}
-                </Text>
-              )}
-
-              {(rewardSummary.bonusHearts ?? 0) > 0 && (
-                <Text style={styles.subHeader}>
-                  Bonus Hearts: +{rewardSummary.bonusHearts}
-                </Text>
-              )}
-            </View>
-          )}
 
           {rewardSummary && (
             <View style={styles.summaryBox}>
-              <Text style={styles.summaryText}>
+              <Text style={styles.summaryLine}>
                 You answered {rewardSummary.totalCorrect} of{" "}
                 {rewardSummary.totalQuestions} correctly (
                 {Math.round(rewardSummary.accuracy * 100)}%).
@@ -249,141 +289,334 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
               {rewardSummary.result === "passed" ? (
                 <>
-                  <Text style={styles.summaryText}>
+                  <Text style={styles.summaryLine}>
                     XP gained: {rewardSummary.xpEarned}
                   </Text>
-                  <Text style={styles.summaryText}>
+                  <Text style={styles.summaryLine}>
                     Coins gained: {rewardSummary.coinsEarned}
                   </Text>
                 </>
               ) : (
-                <Text style={styles.summaryText}>
+                <Text style={styles.summaryLine}>
                   No XP or coins this time – try again!
                 </Text>
+              )}
+
+              {rewardSummary.result === "passed" && (
+                <>
+                  {(rewardSummary.bonusAskQuizzers ?? 0) > 0 && (
+                    <Text style={styles.summaryLine}>
+                      Bonus Ask Quizzers: +{rewardSummary.bonusAskQuizzers}
+                    </Text>
+                  )}
+                  {(rewardSummary.bonusHearts ?? 0) > 0 && (
+                    <Text style={styles.summaryLine}>
+                      Bonus Hearts: +{rewardSummary.bonusHearts}
+                    </Text>
+                  )}
+                </>
               )}
             </View>
           )}
 
-          <TouchableOpacity style={styles.optionButton} onPress={onRestart}>
-            <Text style={styles.optionText}>Play Again</Text>
+          <TouchableOpacity
+            onPress={onRestart}
+            activeOpacity={0.9}
+            style={{ marginTop: 18, alignSelf: "center" }}
+          >
+            <NeonButton label="Play Again" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.optionButton, styles.backButton]}
             onPress={onBackToMenu}
+            activeOpacity={0.9}
+            style={{ marginTop: 10, alignSelf: "center" }}
           >
-            <Text style={styles.optionText}>Back to Levels</Text>
+            <NeonButton label="Back to Levels" variant="purple" />
           </TouchableOpacity>
         </View>
       )}
-    </SafeAreaView>
+    </StageScreen>
   );
 };
 
+const TEXT_MAIN = "#F9FAFB";
+const TEXT_MUTED = "#9CA3AF";
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#111827",
-    padding: 16,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#F9FAFB",
-    marginBottom: 8,
-  },
-  subHeader: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    marginBottom: 16,
-  },
-  content: {
-    marginTop: 24,
-  },
-  question: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#F9FAFB",
-    marginBottom: 16,
-  },
-  optionsContainer: {
-    marginTop: 8,
-  },
-  optionButton: {
-    backgroundColor: "#1F2937",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  optionText: {
-    color: "#E5E7EB",
-    fontSize: 16,
-  },
-  correctOption: {
-    backgroundColor: "#16A34A",
-  },
-  incorrectOption: {
-    backgroundColor: "#DC2626",
-  },
-  disabledOption: {
-    opacity: 0.6,
-  },
-  backButton: {
-    marginTop: 8,
-    backgroundColor: "#374151",
-  },
-  lifelineRow: {
+  // Shared layout
+  hudContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 6,
     flexDirection: "row",
-    marginBottom: 8,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
-  lifelineButton: {
-    backgroundColor: "#4B5563",
+  venueTag: {
+    fontSize: 12,
+    color: "#9CA3FF",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+  },
+  levelTag: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: TEXT_MAIN,
+  },
+  hudStatsRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  statPill: {
+    borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 10,
+    backgroundColor: "rgba(15,23,42,0.9)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
+  },
+  statLabel: {
+    fontSize: 10,
+    color: "#A5B4FC",
+  },
+  statValue: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+  },
+  hudBottomRow: {
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  hudInlineRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  hudMetaText: {
+    fontSize: 12,
+    color: TEXT_MUTED,
+  },
+  timerPill: {
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 999,
-    marginRight: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: "rgba(30,64,175,0.95)",
+    borderWidth: 1,
+    borderColor: "#FBBF24",
+  },
+  timerLabel: {
+    fontSize: 10,
+    color: "#FBBF24",
+    marginRight: 4,
+    fontWeight: "700",
+  },
+  timerValue: {
+    fontSize: 13,
+    color: "#FEF9C3",
+    fontWeight: "700",
+  },
+  questionProgress: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    paddingHorizontal: 20,
+    marginTop: 6,
+    marginBottom: 4,
+  },
+
+  // Lifelines
+  lifelineRow: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    gap: 8,
+  },
+  lifelineButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(96,165,250,0.9)",
+    shadowColor: "#60A5FA",
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   lifelineButtonUsed: {
     opacity: 0.4,
+    shadowOpacity: 0,
   },
-  lifelineText: {
-    color: "#E5E7EB",
+  lifelineLabel: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: "700",
+    color: "#E0F2FE",
   },
+  lifelineCount: {
+    marginLeft: 6,
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#BAE6FD",
+  },
+
+  // Poll
   pollContainer: {
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 6,
   },
   pollText: {
-    color: "#9CA3AF",
+    color: TEXT_MUTED,
     fontSize: 12,
   },
-  timerText: {
-    fontSize: 14,
-    color: "#FBBF24", // amber-ish; tweak later with styling pass
-    marginBottom: 8,
+
+  // Question + options
+  questionCard: {
+    marginTop: 14,
+    marginHorizontal: 20,
+    borderRadius: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(15,23,42,0.98)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
+    shadowColor: "#000",
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+    overflow: "hidden",
   },
-  questionProgress: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    marginTop: 4,
-    marginBottom: 4,
+  questionHighlightStrip: {
+    position: "absolute",
+    top: 0,
+    left: -20,
+    right: -20,
+    height: 40,
+    backgroundColor: "rgba(79,70,229,0.5)",
+    opacity: 0.6,
   },
-  shopButton: {
-    marginTop: 8,
-    backgroundColor: "#9333EA", // purple CTA (adjust later)
+  questionText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+  },
+  optionsContainer: {
+    marginTop: 14,
+    marginHorizontal: 20,
+  },
+  optionButton: {
+    borderRadius: 999,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  optionButtonPressed: {
+    transform: [{ scale: 0.97 }],
+  },
+  optionText: {
+    color: "#E5E7EB",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  correctOption: {
+    backgroundColor: "#16A34A",
+    borderColor: "#BBF7D0",
+    shadowColor: "#16A34A",
+    shadowOpacity: 0.9,
+  },
+  incorrectOption: {
+    backgroundColor: "#DC2626",
+    borderColor: "#FCA5A5",
+    shadowColor: "#DC2626",
+    shadowOpacity: 0.9,
+  },
+  disabledOption: {
+    opacity: 0.5,
+    shadowOpacity: 0.2,
+  },
+
+  // Finished state
+  finishedContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  resultBanner: {
+    alignSelf: "center",
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.9)",
+    shadowColor: "#000",
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  resultBannerText: {
+    color: TEXT_MAIN,
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  finishedSub: {
+    marginTop: 14,
+    textAlign: "center",
+    fontSize: 14,
+    color: TEXT_MUTED,
+  },
+  finishedSubEm: {
+    color: TEXT_MAIN,
+    fontWeight: "700",
   },
   summaryBox: {
-    backgroundColor: "#1F2937",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-    marginBottom: 16,
+    marginTop: 18,
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(148,163,255,0.7)",
   },
-  summaryText: {
-    color: "#E5E7EB",
-    fontSize: 14,
+  summaryLine: {
+    color: TEXT_MAIN,
+    fontSize: 13,
     marginBottom: 4,
+  },
+
+  // Centered edge states
+  centerStateContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  centerTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: TEXT_MAIN,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  centerSubtitle: {
+    fontSize: 14,
+    color: TEXT_MUTED,
+    textAlign: "center",
+    marginBottom: 16,
   },
 });
