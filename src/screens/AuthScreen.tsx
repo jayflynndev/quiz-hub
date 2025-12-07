@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
 import { StageScreen } from "../ui/StageScreen";
 import { NeonButton } from "../ui/NeonButton";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 interface AuthScreenProps {
   onLinked: (userId: string) => void;
@@ -123,27 +123,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
             />
 
             {message && <Text style={styles.message}>{message}</Text>}
-            {loading && <ActivityIndicator style={styles.loadingIndicator} />}
+            {loading && <LoadingSpinner />}
 
             {/* Create Account – Neon primary */}
-            <TouchableOpacity
+            <NeonButton
+              label="Create Account"
               onPress={handleSignUp}
-              disabled={disabled}
-              activeOpacity={0.9}
               style={{ opacity: disabled ? 0.5 : 1, marginBottom: 8 }}
-            >
-              <NeonButton label="Create Account" />
-            </TouchableOpacity>
+            />
 
             {/* Sign In – Neon alternate (purple) */}
-            <TouchableOpacity
+            <NeonButton
+              label="Sign In"
               onPress={handleSignIn}
-              disabled={disabled}
-              activeOpacity={0.9}
+              variant="purple"
               style={{ opacity: disabled ? 0.5 : 1 }}
-            >
-              <NeonButton label="Sign In" variant="purple" />
-            </TouchableOpacity>
+            />
           </View>
         </View>
       </View>
@@ -245,9 +240,6 @@ const styles = StyleSheet.create({
     color: "#FBBF24",
     marginBottom: 8,
     fontSize: 13,
-  },
-  loadingIndicator: {
-    marginBottom: 8,
   },
 
   // Footer

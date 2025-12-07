@@ -79,13 +79,11 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
       {/* Footer actions */}
       <View style={styles.footer}>
         {/* Neon primary CTA */}
-        <TouchableOpacity
+        <NeonButton
+          label="Open Shop"
           onPress={onOpenShop}
-          activeOpacity={0.9}
           style={{ marginBottom: 8 }}
-        >
-          <NeonButton label="Open Shop" />
-        </TouchableOpacity>
+        />
 
         <TouchableOpacity
           style={styles.secondaryButton}

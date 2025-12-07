@@ -5,6 +5,7 @@ import {
   getCurrentQuestion,
 } from "../engine/gameEngine";
 import type { GameSession, LevelConfig, LevelId } from "../types/game";
+import { useToast } from "../contexts/ToastContext";
 
 interface UseAnswerHandlersArgs {
   session: GameSession | null;
@@ -25,6 +26,7 @@ interface UseAnswerHandlersResult {
 export const useAnswerHandlers = (
   args: UseAnswerHandlersArgs
 ): UseAnswerHandlersResult => {
+  const { showToast } = useToast();
   const {
     session,
     selectedLevelId,

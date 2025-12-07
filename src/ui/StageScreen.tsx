@@ -19,6 +19,9 @@ export const StageScreen: React.FC<StageScreenProps> = ({
   children,
   style,
 }) => {
+  // Screen fade-in animation
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+
   // Blobs
   const pulse1 = React.useRef(new Animated.Value(0)).current;
   const pulse2 = React.useRef(new Animated.Value(0)).current;
@@ -28,6 +31,14 @@ export const StageScreen: React.FC<StageScreenProps> = ({
   const lightBottom = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
+    // Screen fade-in
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+
     const loopFloat = (val: Animated.Value, duration: number) =>
       Animated.loop(
         Animated.sequence([
@@ -131,39 +142,41 @@ export const StageScreen: React.FC<StageScreenProps> = ({
   };
 
   return (
-    <SafeAreaView
-      style={styles.safe}
-      edges={["top", "right", "bottom", "left"]}
-    >
-      {/* Background stage */}
-      <View style={styles.background}>
-        <View style={styles.bgLayerDark} />
-        <View style={styles.bgLayerSoft} />
+    <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <SafeAreaView
+        style={styles.safe}
+        edges={["top", "right", "bottom", "left"]}
+      >
+        {/* Background stage */}
+        <View style={styles.background}>
+          <View style={styles.bgLayerDark} />
+          <View style={styles.bgLayerSoft} />
 
-        {/* Glowing blobs */}
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.blob, styles.blobPurple, blob1Style]}
-        />
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.blob, styles.blobBlue, blob2Style]}
-        />
+          {/* Glowing blobs */}
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.blob, styles.blobPurple, blob1Style]}
+          />
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.blob, styles.blobBlue, blob2Style]}
+          />
 
-        {/* Spotlights */}
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.spotlightTopLeft, topLightStyle]}
-        />
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.spotlightBottomRight, bottomLightStyle]}
-        />
-      </View>
+          {/* Spotlights */}
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.spotlightTopLeft, topLightStyle]}
+          />
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.spotlightBottomRight, bottomLightStyle]}
+          />
+        </View>
 
-      {/* Foreground content */}
-      <View style={[styles.content, style]}>{children}</View>
-    </SafeAreaView>
+        {/* Foreground content */}
+        <View style={[styles.content, style]}>{children}</View>
+      </SafeAreaView>
+    </Animated.View>
   );
 };
 

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type {
   GameSession,
   LevelConfig,
@@ -74,13 +75,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       <StageScreen>
         <View style={styles.centerStateContainer}>
           <Text style={styles.centerTitle}>No question loaded</Text>
-          <TouchableOpacity
+          <NeonButton
+            label="Back to Menu"
             onPress={onBackToMenu}
-            activeOpacity={0.9}
-            style={{ marginTop: 16 }}
-          >
-            <NeonButton label="Back to Menu" style={{ alignSelf: "center" }} />
-          </TouchableOpacity>
+            icon={<Ionicons name="home" size={16} color="#ECFDF5" />}
+            style={{ alignSelf: "center", marginTop: 16 }}
+          />
         </View>
       </StageScreen>
     );
@@ -96,31 +96,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             You need hearts to play levels. Come back later or buy more!
           </Text>
 
-          <TouchableOpacity
+          <NeonButton
+            label="Back to Level Select"
             onPress={onBackToMenu}
-            activeOpacity={0.9}
-            style={{ marginTop: 16 }}
-          >
-            <NeonButton
-              label="Back to Level Select"
-              style={{ alignSelf: "center" }}
-            />
-          </TouchableOpacity>
+            style={{ alignSelf: "center", marginTop: 16 }}
+          />
 
-          <TouchableOpacity
+          <NeonButton
+            label="Buy Hearts"
             onPress={() => {
               // later: navigate to ShopScreen
               onBackToMenu(); // for now
             }}
-            activeOpacity={0.9}
-            style={{ marginTop: 10 }}
-          >
-            <NeonButton
-              label="Buy Hearts"
-              variant="purple"
-              style={{ alignSelf: "center" }}
-            />
-          </TouchableOpacity>
+            variant="purple"
+            style={{ alignSelf: "center", marginTop: 10 }}
+          />
         </View>
       </StageScreen>
     );
@@ -153,11 +143,24 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
       <View style={styles.hudBottomRow}>
         <View style={styles.hudInlineRow}>
-          <Text style={styles.hudMetaText}>Coins {profile.coins}</Text>
-          <Text style={styles.hudMetaText}>Hearts {profile.hearts}</Text>
+          <Text
+            style={styles.hudMetaText}
+            accessibilityLabel={`Coins: ${profile.coins}`}
+          >
+            Coins {profile.coins}
+          </Text>
+          <Text
+            style={styles.hudMetaText}
+            accessibilityLabel={`Hearts: ${profile.hearts}`}
+          >
+            Hearts {profile.hearts}
+          </Text>
         </View>
         {timeLeft !== null && (
-          <View style={styles.timerPill}>
+          <View
+            style={styles.timerPill}
+            accessibilityLabel={`Time remaining: ${timeLeft} seconds`}
+          >
             <Text style={styles.timerLabel}>TIME</Text>
             <Text style={styles.timerValue}>{timeLeft}s</Text>
           </View>
@@ -185,6 +188,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   disabled={usedAskQuizzersThisQuestion}
                   onPress={onUseAskQuizzers}
                   activeOpacity={0.85}
+                  accessibilityLabel={`Ask Quizzers lifeline, ${askQuizzersRemaining} remaining`}
+                  accessibilityHint="Get help from virtual quizzers to eliminate wrong answers"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: usedAskQuizzersThisQuestion }}
                 >
                   <Text style={styles.lifelineLabel}>Ask Quizzers</Text>
                   <Text style={styles.lifelineCount}>
@@ -203,6 +210,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   disabled={usedFiftyFiftyThisQuestion}
                   onPress={onUseFiftyFifty}
                   activeOpacity={0.85}
+                  accessibilityLabel={`Fifty fifty lifeline, ${fiftyFiftyRemaining} remaining`}
+                  accessibilityHint="Remove two incorrect answers, leaving two options"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: usedFiftyFiftyThisQuestion }}
                 >
                   <Text style={styles.lifelineLabel}>50 / 50</Text>
                   <Text style={styles.lifelineCount}>
@@ -226,7 +237,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Question card + options */}
           <View style={styles.questionCard}>
             <View style={styles.questionHighlightStrip} />
-            <Text style={styles.questionText}>
+            <Text style={styles.questionText} accessibilityRole="text">
               Q{currentIndex + 1}. {question.text}
             </Text>
           </View>
@@ -254,6 +265,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       isOtherAfterSelect && styles.disabledOption,
                       pressed && !disabled && styles.optionButtonPressed,
                     ]}
+                    accessibilityLabel={`Option ${option.id}: ${option.text}`}
+                    accessibilityHint={
+                      disabled
+                        ? "Answer already selected"
+                        : "Select this answer option"
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: isSelected,
+                      disabled: disabled,
+                    }}
                   >
                     <Text style={styles.optionText}>
                       {option.id}. {option.text}
@@ -319,21 +341,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             </View>
           )}
 
-          <TouchableOpacity
+          <NeonButton
+            label="Play Again"
             onPress={onRestart}
-            activeOpacity={0.9}
+            icon={<Ionicons name="refresh" size={16} color="#ECFDF5" />}
             style={{ marginTop: 18, alignSelf: "center" }}
-          >
-            <NeonButton label="Play Again" />
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
+          <NeonButton
+            label="Back to Levels"
             onPress={onBackToMenu}
-            activeOpacity={0.9}
+            icon={<Ionicons name="list" size={16} color="#ECFDF5" />}
+            variant="purple"
             style={{ marginTop: 10, alignSelf: "center" }}
-          >
-            <NeonButton label="Back to Levels" variant="purple" />
-          </TouchableOpacity>
+          />
         </View>
       )}
     </StageScreen>

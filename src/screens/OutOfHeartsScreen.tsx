@@ -102,13 +102,11 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
           {/* Buttons */}
           <View style={styles.buttons}>
             {/* Neon primary CTA */}
-            <TouchableOpacity
+            <NeonButton
+              label="Go to Shop"
               onPress={onGoToShop}
-              activeOpacity={0.9}
               style={{ marginBottom: 10 }}
-            >
-              <NeonButton label="Go to Shop" />
-            </TouchableOpacity>
+            />
 
             {/* Secondary outline-style button */}
             <TouchableOpacity

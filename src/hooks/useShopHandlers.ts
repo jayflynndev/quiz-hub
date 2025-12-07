@@ -3,6 +3,7 @@ import * as React from "react";
 import type { PlayerProfile } from "../types/game";
 import { SHOP_ITEMS, ShopItemId } from "../data/shopItems";
 import { MAX_HEARTS } from "./usePlayerProfile";
+import { useToast } from "../contexts/ToastContext";
 
 interface UseShopHandlersArgs {
   profile: PlayerProfile;
@@ -20,6 +21,7 @@ export const useShopHandlers = ({
   profile,
   saveProfile,
 }: UseShopHandlersArgs): UseShopHandlersResult => {
+  const { showToast } = useToast();
   const buyShopItem = React.useCallback(
     (itemId: ShopItemId) => {
       const item = SHOP_ITEMS[itemId];
@@ -27,7 +29,7 @@ export const useShopHandlers = ({
 
       // Not enough coins
       if (profile.coins < item.cost) {
-        // later: show "not enough coins" toast
+        showToast("Not enough coins!", "error");
         return;
       }
 
@@ -56,6 +58,19 @@ export const useShopHandlers = ({
       }
 
       void saveProfile(next);
+
+      // Show success toast
+      switch (itemId) {
+        case "HEART":
+          showToast("Heart purchased! ❤️", "success");
+          break;
+        case "ASK_QUIZZERS":
+          showToast("Ask Quizzers upgraded! 👥", "success");
+          break;
+        case "FIFTY_FIFTY":
+          showToast("50/50 upgraded! ✨", "success");
+          break;
+      }
     },
     [profile, saveProfile]
   );

@@ -41,6 +41,9 @@ import { useProgress } from "./src/hooks/useProgress";
 import { useGameSession } from "./src/hooks/useGameSession";
 import { computeUpdatedStreak } from "./src/hooks/streakUtils";
 import { useShopHandlers } from "./src/hooks/useShopHandlers";
+import { ThemeProvider } from "./src/contexts/ThemeContext";
+import { ToastProvider, useToast } from "./src/contexts/ToastContext";
+import { ToastContainer } from "./src/ui/Toast";
 
 type Screen =
   | "splash"
@@ -56,7 +59,18 @@ type Screen =
   | "auth";
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
   const [screen, setScreen] = React.useState<Screen>("splash");
+  const { toasts, showToast, hideToast } = useToast();
 
   const {
     profile,
@@ -188,6 +202,16 @@ export default function App() {
   };
 
   const applyAnswerOutcome = (updated: GameSession, level: LevelConfig) => {
+    // Show toast for the last answer
+    const lastAnswer = updated.answers[updated.answers.length - 1];
+    if (lastAnswer) {
+      if (lastAnswer.correct) {
+        showToast("Correct! 🎉", "success", 1500);
+      } else {
+        showToast("Incorrect 😔", "error", 1500);
+      }
+    }
+
     // Update session + clear per-question state, then stop timer
     applyUpdatedSessionForAnswer(updated);
     clearQuestionTimer();
@@ -292,6 +316,8 @@ export default function App() {
         bonusAskQuizzers,
         bonusHearts: bonusHearts + streakBonusHearts,
       });
+
+      showToast(`Level ${level.levelNumber} completed! 🏆`, "success", 3000);
     } else if (updated.status === "failed") {
       const { newDailyStreak, newLastActiveAt } = computeUpdatedStreak(profile);
 
@@ -332,6 +358,8 @@ export default function App() {
         bonusAskQuizzers: 0,
         bonusHearts: streakBonusHearts,
       });
+
+      showToast("Level failed. Try again! 💪", "warning", 3000);
     }
   };
 
@@ -500,50 +528,62 @@ export default function App() {
 
   if (screen === "home") {
     return (
-      <HomeMenuScreen
-        onPlaySinglePlayer={() => setScreen("regions")}
-        onOpenMultiplayer={() => {
-          // coming soon
-        }}
-        onOpenProfile={() => setScreen("profile")}
-        onOpenShop={() => setScreen("shop")}
-      />
+      <>
+        <HomeMenuScreen
+          onPlaySinglePlayer={() => setScreen("regions")}
+          onOpenMultiplayer={() => {
+            // coming soon
+          }}
+          onOpenProfile={() => setScreen("profile")}
+          onOpenShop={() => setScreen("shop")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "regions") {
     return (
-      <RegionSelectScreen
-        regions={regions}
-        onSelectRegion={handleSelectRegion}
-        onBackToHome={() => setScreen("home")}
-      />
+      <>
+        <RegionSelectScreen
+          regions={regions}
+          onSelectRegion={handleSelectRegion}
+          onBackToHome={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "auth") {
     return (
-      <AuthScreen
-        onLinked={async (userId) => {
-          await linkGuestProfileToAuthUser(userId);
-          setScreen("profile");
-        }}
-        onBack={() => setScreen("profile")}
-      />
+      <>
+        <AuthScreen
+          onLinked={async (userId) => {
+            await linkGuestProfileToAuthUser(userId);
+            setScreen("profile");
+          }}
+          onBack={() => setScreen("profile")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "profile") {
     const xpToNextLevel = profile.level * 100;
     return (
-      <ProfileScreen
-        profile={profile}
-        xpToNextLevel={xpToNextLevel}
-        isSignedIn={!!authUserId}
-        onOpenAuth={() => setScreen("auth")}
-        onLogout={handleLogout}
-        onBack={() => setScreen("home")}
-      />
+      <>
+        <ProfileScreen
+          profile={profile}
+          xpToNextLevel={xpToNextLevel}
+          isSignedIn={!!authUserId}
+          onOpenAuth={() => setScreen("auth")}
+          onLogout={handleLogout}
+          onBack={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
@@ -559,37 +599,46 @@ export default function App() {
 
   if (screen === "out_of_hearts") {
     return (
-      <OutOfHeartsScreen
-        hearts={profile.hearts}
-        maxHearts={MAX_HEARTS}
-        lastHeartUpdateAt={profile.lastHeartUpdateAt}
-        heartRegenMs={HEART_REGEN_MS}
-        onGoToShop={() => setScreen("shop")}
-        onBackToVenues={() => setScreen("venues")}
-      />
+      <>
+        <OutOfHeartsScreen
+          hearts={profile.hearts}
+          maxHearts={MAX_HEARTS}
+          lastHeartUpdateAt={profile.lastHeartUpdateAt}
+          heartRegenMs={HEART_REGEN_MS}
+          onGoToShop={() => setScreen("shop")}
+          onBackToVenues={() => setScreen("venues")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "shop") {
     return (
-      <ShopScreen
-        profile={profile}
-        onBuyAskQuizzersUpgrade={handleBuyAskQuizzersUpgrade}
-        onBuyFiftyFiftyUpgrade={handleBuyFiftyFiftyUpgrade}
-        onBuyHeart={handleBuyHeart}
-        onBack={() => setScreen("home")}
-      />
+      <>
+        <ShopScreen
+          profile={profile}
+          onBuyAskQuizzersUpgrade={handleBuyAskQuizzersUpgrade}
+          onBuyFiftyFiftyUpgrade={handleBuyFiftyFiftyUpgrade}
+          onBuyHeart={handleBuyHeart}
+          onBack={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "venues") {
     if (!selectedRegionId) {
       return (
-        <RegionSelectScreen
-          regions={regions}
-          onSelectRegion={handleSelectRegion}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <RegionSelectScreen
+            regions={regions}
+            onSelectRegion={handleSelectRegion}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
@@ -599,52 +648,64 @@ export default function App() {
 
     if (!venue) {
       return (
-        <VenueSelectScreen
-          venues={venuesForRegion}
-          onSelectVenue={handleSelectVenue}
-          onOpenShop={() => setScreen("shop")}
-          onRefillHearts={handleRefillHeartsDebug}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <VenueSelectScreen
+            venues={venuesForRegion}
+            onSelectVenue={handleSelectVenue}
+            onOpenShop={() => setScreen("shop")}
+            onRefillHearts={handleRefillHeartsDebug}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
     return (
-      <MenuScreen
-        venueName={venue.name}
-        levels={levelsWithStatus}
-        onStartLevel={startLevel}
-        onBackToVenues={() => {
-          setSelectedVenueId(null);
-          setSelectedLevelId(null);
-          setScreen("venues");
-        }}
-      />
+      <>
+        <MenuScreen
+          venueName={venue.name}
+          levels={levelsWithStatus}
+          onStartLevel={startLevel}
+          onBackToVenues={() => {
+            setSelectedVenueId(null);
+            setSelectedLevelId(null);
+            setScreen("venues");
+          }}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "locked" && lockedLevelInfo) {
     return (
-      <LockedLevelScreen
-        venueName={lockedLevelInfo.venueName}
-        levelNumber={lockedLevelInfo.levelNumber}
-        requiredLevelNumber={lockedLevelInfo.requiredLevelNumber}
-        onBack={() => {
-          setScreen("levels");
-          setLockedLevelInfo(null);
-        }}
-      />
+      <>
+        <LockedLevelScreen
+          venueName={lockedLevelInfo.venueName}
+          levelNumber={lockedLevelInfo.levelNumber}
+          requiredLevelNumber={lockedLevelInfo.requiredLevelNumber}
+          onBack={() => {
+            setScreen("levels");
+            setLockedLevelInfo(null);
+          }}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
   if (screen === "levels") {
     if (!selectedRegionId) {
       return (
-        <RegionSelectScreen
-          regions={regions}
-          onSelectRegion={handleSelectRegion}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <RegionSelectScreen
+            regions={regions}
+            onSelectRegion={handleSelectRegion}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
@@ -654,27 +715,33 @@ export default function App() {
 
     if (!venue) {
       return (
-        <VenueSelectScreen
-          venues={venuesForRegion}
-          onSelectVenue={handleSelectVenue}
-          onOpenShop={() => setScreen("shop")}
-          onRefillHearts={handleRefillHeartsDebug}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <VenueSelectScreen
+            venues={venuesForRegion}
+            onSelectVenue={handleSelectVenue}
+            onOpenShop={() => setScreen("shop")}
+            onRefillHearts={handleRefillHeartsDebug}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
     return (
-      <MenuScreen
-        venueName={venue.name}
-        levels={levelsWithStatus}
-        onStartLevel={startLevel}
-        onBackToVenues={() => {
-          setSelectedVenueId(null);
-          setSelectedLevelId(null);
-          setScreen("venues");
-        }}
-      />
+      <>
+        <MenuScreen
+          venueName={venue.name}
+          levels={levelsWithStatus}
+          onStartLevel={startLevel}
+          onBackToVenues={() => {
+            setSelectedVenueId(null);
+            setSelectedLevelId(null);
+            setScreen("venues");
+          }}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
@@ -682,24 +749,30 @@ export default function App() {
   if (!session || !selectedLevelId) {
     if (!selectedRegionId) {
       return (
-        <RegionSelectScreen
-          regions={regions}
-          onSelectRegion={handleSelectRegion}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <RegionSelectScreen
+            regions={regions}
+            onSelectRegion={handleSelectRegion}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
     const venuesForRegion = getVenuesForRegion(selectedRegionId);
 
     return (
-      <VenueSelectScreen
-        venues={venuesForRegion}
-        onSelectVenue={handleSelectVenue}
-        onOpenShop={() => setScreen("shop")}
-        onRefillHearts={handleRefillHeartsDebug}
-        onBackToHome={() => setScreen("home")}
-      />
+      <>
+        <VenueSelectScreen
+          venues={venuesForRegion}
+          onSelectVenue={handleSelectVenue}
+          onOpenShop={() => setScreen("shop")}
+          onRefillHearts={handleRefillHeartsDebug}
+          onBackToHome={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
@@ -709,24 +782,30 @@ export default function App() {
   if (!currentLevel || !currentVenue) {
     if (!selectedRegionId) {
       return (
-        <RegionSelectScreen
-          regions={regions}
-          onSelectRegion={handleSelectRegion}
-          onBackToHome={() => setScreen("home")}
-        />
+        <>
+          <RegionSelectScreen
+            regions={regions}
+            onSelectRegion={handleSelectRegion}
+            onBackToHome={() => setScreen("home")}
+          />
+          <ToastContainer toasts={toasts} onHideToast={hideToast} />
+        </>
       );
     }
 
     const venuesForRegion = getVenuesForRegion(selectedRegionId);
 
     return (
-      <VenueSelectScreen
-        venues={venuesForRegion}
-        onSelectVenue={handleSelectVenue}
-        onOpenShop={() => setScreen("shop")}
-        onRefillHearts={handleRefillHeartsDebug}
-        onBackToHome={() => setScreen("home")}
-      />
+      <>
+        <VenueSelectScreen
+          venues={venuesForRegion}
+          onSelectVenue={handleSelectVenue}
+          onOpenShop={() => setScreen("shop")}
+          onRefillHearts={handleRefillHeartsDebug}
+          onBackToHome={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
     );
   }
 
@@ -734,27 +813,30 @@ export default function App() {
   const xpToNextLevel = profile.level * 100;
 
   return (
-    <GameScreen
-      session={session}
-      level={currentLevel}
-      venueName={currentVenue.name}
-      selectedOption={selectedOption}
-      onAnswer={handleAnswer}
-      onRestart={handleRestart}
-      onBackToMenu={handleBackToLevels}
-      lifelinesAllowed={lifelinesAllowed}
-      askQuizzersRemaining={askQuizzersRemaining}
-      usedAskQuizzersThisQuestion={usedAskQuizzersThisQuestion}
-      onUseAskQuizzers={handleUseAskQuizzers}
-      fiftyFiftyRemaining={fiftyFiftyRemaining}
-      usedFiftyFiftyThisQuestion={usedFiftyFiftyThisQuestion}
-      onUseFiftyFifty={handleUseFiftyFifty}
-      hiddenOptions={hiddenOptions}
-      audiencePoll={audiencePoll}
-      timeLeft={timeLeft}
-      profile={profile}
-      xpToNextLevel={xpToNextLevel}
-      rewardSummary={lastRewardSummary}
-    />
+    <>
+      <GameScreen
+        session={session}
+        level={currentLevel}
+        venueName={currentVenue.name}
+        selectedOption={selectedOption}
+        onAnswer={handleAnswer}
+        onRestart={handleRestart}
+        onBackToMenu={handleBackToLevels}
+        lifelinesAllowed={lifelinesAllowed}
+        askQuizzersRemaining={askQuizzersRemaining}
+        usedAskQuizzersThisQuestion={usedAskQuizzersThisQuestion}
+        onUseAskQuizzers={handleUseAskQuizzers}
+        fiftyFiftyRemaining={fiftyFiftyRemaining}
+        usedFiftyFiftyThisQuestion={usedFiftyFiftyThisQuestion}
+        onUseFiftyFifty={handleUseFiftyFifty}
+        hiddenOptions={hiddenOptions}
+        audiencePoll={audiencePoll}
+        timeLeft={timeLeft}
+        profile={profile}
+        xpToNextLevel={xpToNextLevel}
+        rewardSummary={lastRewardSummary}
+      />
+      <ToastContainer toasts={toasts} onHideToast={hideToast} />
+    </>
   );
 }

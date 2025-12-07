@@ -128,13 +128,11 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({
 
       {/* Back */}
       <View style={styles.footer}>
-        <TouchableOpacity
+        <NeonButton
+          label="Back to Home"
           onPress={onBack}
-          activeOpacity={0.9}
           style={{ alignSelf: "flex-start" }}
-        >
-          <NeonButton label="Back to Home" />
-        </TouchableOpacity>
+        />
       </View>
     </StageScreen>
   );
