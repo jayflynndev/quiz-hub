@@ -4,47 +4,62 @@ import { Ionicons } from "@expo/vector-icons";
 import { StageScreen } from "../ui/StageScreen";
 import { NeonButton } from "../ui/NeonButton";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { useTheme } from "../contexts/ThemeContext";
-import { useToast } from "../contexts/ToastContext";
+import { useSound } from "../hooks/useSound";
 
 interface HomeMenuScreenProps {
   onPlaySinglePlayer: () => void;
-  onOpenMultiplayer: () => void;
   onOpenProfile: () => void;
   onOpenShop: () => void;
+  onOpenSettings: () => void;
+  onOpenStreakRewards: () => void;
+  onOpenDailyChallenges: () => void;
   loading?: boolean;
 }
 
 export const HomeMenuScreen: React.FC<HomeMenuScreenProps> = ({
   onPlaySinglePlayer,
-  onOpenMultiplayer,
   onOpenProfile,
   onOpenShop,
+  onOpenSettings,
+  onOpenStreakRewards,
+  onOpenDailyChallenges,
   loading = false,
 }) => {
   const { theme } = useTheme();
-  const { showToast } = useToast();
+  const { playButtonSound } = useSound();
 
   const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+
     // Header
     header: {
-      paddingHorizontal: 20,
-      paddingTop: 12,
+      paddingHorizontal: 24,
+      paddingTop: 16,
+      paddingBottom: 8,
     },
     headerTop: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 4,
+      marginBottom: 8,
     },
     headerActions: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      gap: 8,
     },
-    testButton: {
-      padding: 8,
+    profileButton: {
+      padding: 10,
+      borderRadius: 20,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    settingsButton: {
+      padding: 10,
       borderRadius: 20,
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
@@ -55,251 +70,266 @@ export const HomeMenuScreen: React.FC<HomeMenuScreenProps> = ({
       letterSpacing: 2,
       color: "#9CA3FF",
       textTransform: "uppercase",
+      fontWeight: "600",
     },
     title: {
-      fontSize: 26,
+      fontSize: 28,
       fontWeight: "800",
-      color: theme.colors.text,
+      color: "#FFFFFF",
       marginBottom: 4,
     },
     subtitle: {
-      fontSize: 14,
-      color: theme.colors.textSecondary,
+      fontSize: 16,
+      color: "#E5E7EB",
+      lineHeight: 22,
     },
 
-    // Main section
-    mainButtons: {
+    // Main content
+    content: {
       flex: 1,
-      justifyContent: "center",
-      paddingHorizontal: 20,
+      paddingHorizontal: 24,
     },
 
-    // Play button styles
-    playButtonOuter: {
-      marginBottom: 24,
+    // Hero section
+    heroSection: {
+      marginBottom: 32,
     },
-    playButtonInner: {
+    heroCard: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      padding: 24,
+      borderRadius: 20,
+      padding: 32,
       shadowColor: theme.colors.text,
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 6 },
       elevation: 8,
       borderWidth: 1,
       borderColor: theme.colors.border,
     },
-    playGloss: {
+    heroGlow: {
       position: "absolute",
       top: 0,
       left: 0,
       right: 0,
-      height: 80,
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
-      borderTopLeftRadius: 16,
-      borderTopRightRadius: 16,
+      height: 100,
+      backgroundColor: "rgba(156, 163, 255, 0.1)",
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
     },
-    playButtonLabel: {
-      fontSize: 20,
+    heroTitle: {
+      fontSize: 24,
       fontWeight: "800",
       color: theme.colors.text,
       textAlign: "center",
-      marginBottom: 4,
+      marginBottom: 8,
     },
-    playButtonSub: {
-      fontSize: 14,
+    heroSubtitle: {
+      fontSize: 16,
       color: theme.colors.textSecondary,
       textAlign: "center",
-      marginBottom: 16,
+      marginBottom: 24,
+      lineHeight: 22,
     },
-    playNeon: {
+    playButton: {
       alignSelf: "center",
     },
 
-    // Secondary buttons
-    row: {
-      flexDirection: "row",
-      gap: 12,
-      marginBottom: 16,
+    // Features grid
+    featuresSection: {
+      marginBottom: 24,
     },
-    secondaryButton: {
+    featuresTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: "#FFFFFF",
+      marginBottom: 16,
+      textAlign: "center",
+    },
+    featuresGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+    },
+    featureCard: {
       flex: 1,
+      minWidth: "45%",
       backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      padding: 16,
+      borderRadius: 16,
+      padding: 20,
       shadowColor: theme.colors.text,
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.1,
       shadowRadius: 8,
       shadowOffset: { width: 0, height: 2 },
       elevation: 4,
       borderWidth: 1,
       borderColor: theme.colors.border,
     },
-    secondaryTitle: {
+    featureIcon: {
+      fontSize: 24,
+      marginBottom: 12,
+      textAlign: "center",
+    },
+    featureTitle: {
       fontSize: 16,
       fontWeight: "700",
       color: theme.colors.text,
       marginBottom: 4,
+      textAlign: "center",
     },
-    secondarySub: {
-      fontSize: 12,
+    featureSubtitle: {
+      fontSize: 13,
       color: theme.colors.textSecondary,
-    },
-
-    // Multiplayer card
-    multiplayerCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      padding: 16,
-      shadowColor: theme.colors.text,
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 2 },
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      opacity: 0.7,
-    },
-    multiplayerTopRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 8,
-    },
-    multiplayerTitle: {
-      fontSize: 16,
-      fontWeight: "700",
-      color: theme.colors.text,
-    },
-    comingSoonPill: {
-      backgroundColor: theme.colors.neonGreen,
-      color: theme.colors.background,
-      fontSize: 10,
-      fontWeight: "800",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      letterSpacing: 1,
-    },
-    multiplayerSub: {
-      fontSize: 12,
-      color: theme.colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 18,
     },
   });
 
+  if (loading) {
+    return (
+      <StageScreen>
+        <LoadingSpinner />
+      </StageScreen>
+    );
+  }
+
   return (
     <StageScreen>
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          {/* Top branding */}
-          <View style={styles.header}>
-            <View style={styles.headerTop}>
-              <Text
-                style={styles.appTag}
-                accessibilityRole="header"
-                aria-level={1}
-              >
-                JAY&apos;S QUIZ HUB
-              </Text>
-              <View style={styles.headerActions}>
-                <TouchableOpacity
-                  onPress={() => showToast("Test success toast! 🎉", "success")}
-                  style={styles.testButton}
-                  accessibilityLabel="Test success toast"
-                >
-                  <Ionicons name="happy" size={20} color={theme.colors.text} />
-                </TouchableOpacity>
-                <ThemeToggle />
-              </View>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.appTag}>Quiz Hub</Text>
+              <Text style={styles.title}>Welcome Back</Text>
             </View>
-            <Text
-              style={styles.title}
-              accessibilityRole="header"
-              aria-level={2}
-            >
-              Step into the studio 🎬
-            </Text>
-            <Text style={styles.subtitle}>
-              Pick your mode and play for coins, XP and streaks.
-            </Text>
-          </View>
-
-          {/* Main CTA stack */}
-          <View style={styles.mainButtons}>
-            {/* Big Play button like The Chase */}
-            <View style={styles.playButtonOuter}>
-              <View style={styles.playButtonInner}>
-                <View style={styles.playGloss} />
-                <Text style={styles.playButtonLabel}>QUIZ ODYSSEY</Text>
-                <Text style={styles.playButtonSub}>
-                  Single Player · Level Path
-                </Text>
-                <NeonButton
-                  label="PLAY"
-                  onPress={onPlaySinglePlayer}
-                  icon={
-                    <Ionicons name="play" size={18} color={theme.colors.text} />
-                  }
-                  style={styles.playNeon}
-                  accessibilityLabel="Start Quiz Odyssey single player game"
-                  accessibilityHint="Begins a new single player quiz game with level progression"
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={() => {
+                  playButtonSound();
+                  onOpenProfile();
+                }}
+                style={styles.profileButton}
+                accessibilityLabel="Profile"
+                accessibilityHint="View your profile and statistics"
+              >
+                <Ionicons
+                  name="person-circle-outline"
+                  size={20}
+                  color={theme.colors.text}
                 />
-              </View>
-            </View>
-
-            {/* Secondary buttons row */}
-            <View style={styles.row}>
+              </TouchableOpacity>
               <TouchableOpacity
-                onPress={onOpenShop}
-                style={styles.secondaryButton}
-                activeOpacity={0.85}
-                accessibilityLabel="Open shop"
-                accessibilityHint="Purchase coins, hearts, and lifelines"
-                accessibilityRole="button"
+                onPress={() => {
+                  playButtonSound();
+                  onOpenSettings();
+                }}
+                style={styles.settingsButton}
+                accessibilityLabel="Settings"
+                accessibilityHint="Open app settings"
               >
-                <Text style={styles.secondaryTitle}>Shop</Text>
-                <Text style={styles.secondarySub}>
-                  Coins, hearts & lifelines
+                <Ionicons
+                  name="settings-outline"
+                  size={20}
+                  color={theme.colors.text}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <Text style={styles.subtitle}>Ready for your next challenge?</Text>
+        </View>
+
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Hero Play Section */}
+          <View style={styles.heroSection}>
+            <View style={styles.heroCard}>
+              <View style={styles.heroGlow} />
+              <Text style={styles.heroTitle}>Quiz Odyssey</Text>
+              <Text style={styles.heroSubtitle}>
+                Test your knowledge across multiple categories and levels
+              </Text>
+              <NeonButton
+                label="Start Playing"
+                onPress={() => {
+                  playButtonSound();
+                  onPlaySinglePlayer();
+                }}
+                icon={
+                  <Ionicons name="play" size={18} color={theme.colors.text} />
+                }
+                style={styles.playButton}
+                accessibilityLabel="Start quiz game"
+                accessibilityHint="Begin a new quiz game"
+              />
+            </View>
+          </View>
+
+          {/* Features Grid */}
+          <View style={styles.featuresSection}>
+            <Text style={styles.featuresTitle}>Explore Features</Text>
+            <View style={styles.featuresGrid}>
+              <TouchableOpacity
+                onPress={() => {
+                  playButtonSound();
+                  onOpenDailyChallenges();
+                }}
+                style={styles.featureCard}
+                activeOpacity={0.8}
+                accessibilityLabel="Daily challenges"
+                accessibilityHint="Complete daily challenges for rewards"
+              >
+                <Text style={styles.featureIcon}>🎯</Text>
+                <Text style={styles.featureTitle}>Daily Challenges</Text>
+                <Text style={styles.featureSubtitle}>
+                  Complete daily quests for bonus rewards
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={onOpenProfile}
-                style={styles.secondaryButton}
-                activeOpacity={0.85}
-                accessibilityLabel="View profile"
-                accessibilityHint="Check your XP, level, and game statistics"
-                accessibilityRole="button"
+                onPress={() => {
+                  playButtonSound();
+                  onOpenStreakRewards();
+                }}
+                style={styles.featureCard}
+                activeOpacity={0.8}
+                accessibilityLabel="Streak rewards"
+                accessibilityHint="View daily login bonuses and milestones"
               >
-                <Text style={styles.secondaryTitle}>Profile</Text>
-                <Text style={styles.secondarySub}>XP, level & stats</Text>
+                <Text style={styles.featureIcon}>🔥</Text>
+                <Text style={styles.featureTitle}>Streak Rewards</Text>
+                <Text style={styles.featureSubtitle}>
+                  Daily bonuses and milestone achievements
+                </Text>
               </TouchableOpacity>
-            </View>
 
-            {/* Multiplayer teaser like a locked mode */}
-            <TouchableOpacity
-              onPress={onOpenMultiplayer}
-              style={styles.multiplayerCard}
-              activeOpacity={0.8}
-              accessibilityLabel="Multiplayer mode - coming soon"
-              accessibilityHint="Real-time multiplayer quiz games with friends"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: true }}
-            >
-              <View style={styles.multiplayerTopRow}>
-                <Text style={styles.multiplayerTitle}>Multiplayer</Text>
-                <Text style={styles.comingSoonPill}>COMING SOON</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  playButtonSound();
+                  onOpenShop();
+                }}
+                style={styles.featureCard}
+                activeOpacity={0.8}
+                accessibilityLabel="Shop"
+                accessibilityHint="Purchase items and power-ups"
+              >
+                <Text style={styles.featureIcon}>🛒</Text>
+                <Text style={styles.featureTitle}>Shop</Text>
+                <Text style={styles.featureSubtitle}>
+                  Buy coins, hearts, and power-ups
+                </Text>
+              </TouchableOpacity>
+
+              <View style={[styles.featureCard, { opacity: 0.6 }]}>
+                <Text style={styles.featureIcon}>👥</Text>
+                <Text style={styles.featureTitle}>Multiplayer</Text>
+                <Text style={styles.featureSubtitle}>
+                  Coming soon - play with friends
+                </Text>
               </View>
-              <Text style={styles.multiplayerSub}>
-                Face friends & rivals in real-time shows.
-              </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        </>
-      )}
+        </View>
+      </View>
     </StageScreen>
   );
 };

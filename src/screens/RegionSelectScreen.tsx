@@ -52,8 +52,8 @@ export const RegionSelectScreen: React.FC<RegionSelectScreenProps> = ({
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.appTag}>Quiz World</Text>
-        <Text style={styles.title}>Choose Your Region</Text>
-        <Text style={styles.subtitle}>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Hub</Text>
+        <Text style={styles.appSubtitle}>
           Start your journey in one part of the quiz world.
         </Text>
       </View>
@@ -102,12 +102,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 2,
   },
-  title: {
+  appTitle: {
     fontSize: 22,
     fontWeight: "800",
     color: TEXT_MAIN,
   },
-  subtitle: {
+  appSubtitle: {
     marginTop: 4,
     fontSize: 13,
     color: TEXT_MUTED,

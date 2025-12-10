@@ -104,4 +104,12 @@ export const LEVELS: LevelConfig[] = [
   ...createStandardLevelsForVenue("uk_local_pub", "uk_pub"),
   // UK Village Hall
   ...createStandardLevelsForVenue("uk_village_hall", "uk_vh"),
+  // UK Sports Bar
+  ...createStandardLevelsForVenue("uk_sports_bar", "uk_sb"),
+  // UK Music Venue
+  ...createStandardLevelsForVenue("uk_music_venue", "uk_mv"),
+  // UK Food Festival
+  ...createStandardLevelsForVenue("uk_food_festival", "uk_ff"),
+  // UK National Gallery (Boss)
+  ...createStandardLevelsForVenue("uk_national_gallery", "uk_ng"),
 ];

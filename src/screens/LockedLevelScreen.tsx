@@ -29,10 +29,9 @@ export const LockedLevelScreen: React.FC<LockedLevelScreenProps> = ({
       {/* Lock card */}
       <View style={styles.cardOuter}>
         <View style={styles.cardInner}>
-          <View style={styles.cardHighlightStrip} />
+          <View style={[styles.cardHighlightStrip, styles.lockedStrip]} />
 
-          <Text style={styles.lockIcon}>🔒</Text>
-          <Text style={styles.headerText}>Level {levelNumber} Locked</Text>
+          <Text style={styles.cardTitle}>🔒 Level Locked</Text>
 
           <Text style={styles.subHeader}>
             To unlock this level in{" "}
@@ -77,7 +76,7 @@ const styles = StyleSheet.create({
   appTag: {
     fontSize: 11,
     letterSpacing: 2,
-    color: "#FBBF24",
+    color: "#9CA3FF",
     textTransform: "uppercase",
     marginBottom: 2,
   },
@@ -101,7 +100,8 @@ const styles = StyleSheet.create({
   },
   cardInner: {
     borderRadius: 22,
-    paddingVertical: 20,
+    paddingTop: 58, // 40 for strip + 18 for spacing
+    paddingBottom: 18,
     paddingHorizontal: 18,
     backgroundColor: "rgba(15,23,42,0.97)",
     borderWidth: 1,
@@ -119,22 +119,25 @@ const styles = StyleSheet.create({
     left: -20,
     right: -20,
     height: 40,
-    backgroundColor: "rgba(248,113,113,0.45)",
     opacity: 0.7,
   },
-
-  lockIcon: {
-    fontSize: 40,
-    textAlign: "center",
-    marginBottom: 8,
+  lockedStrip: {
+    backgroundColor: "rgba(239,68,68,0.45)", // red for locked
   },
-  headerText: {
-    fontSize: 22,
-    fontWeight: "800",
+  cardTitle: {
+    position: "absolute",
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 40,
+    fontSize: 18,
+    fontWeight: "bold",
     color: TEXT_MAIN,
     textAlign: "center",
-    marginBottom: 8,
+    textAlignVertical: "center",
+    lineHeight: 40,
   },
+
   subHeader: {
     fontSize: 14,
     color: TEXT_MUTED,

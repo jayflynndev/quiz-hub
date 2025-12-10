@@ -8,4 +8,10 @@ export const REGIONS: Region[] = [
     order: 1,
     flagEmoji: "🇬🇧",
   },
+  {
+    id: "specialist",
+    name: "Specialist Challenges",
+    order: 2,
+    flagEmoji: "🎯",
+  },
 ];

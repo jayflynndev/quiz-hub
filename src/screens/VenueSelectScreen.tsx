@@ -54,8 +54,8 @@ export const VenueSelectScreen: React.FC<VenueSelectScreenProps> = ({
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.appTag}>Quiz Venues</Text>
-        <Text style={styles.title}>Pick a Venue</Text>
-        <Text style={styles.subtitle}>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Hub</Text>
+        <Text style={styles.appSubtitle}>
           Each venue has 10 levels. Start where you fancy playing tonight.
         </Text>
       </View>
@@ -125,12 +125,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 2,
   },
-  title: {
+  appTitle: {
     fontSize: 22,
     fontWeight: "800",
     color: TEXT_MAIN,
   },
-  subtitle: {
+  appSubtitle: {
     marginTop: 4,
     fontSize: 13,
     color: TEXT_MUTED,

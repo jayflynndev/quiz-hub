@@ -1,5 +1,7 @@
 // App.tsx
 import * as React from "react";
+import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import type {
   GameSession,
@@ -8,6 +10,7 @@ import type {
   LifelineType,
   LevelConfig,
   PlayerProfile,
+  DailyChallenge,
 } from "./src/types/game";
 import {
   createSessionForLevel,
@@ -26,9 +29,15 @@ import { OutOfHeartsScreen } from "./src/screens/OutOfHeartsScreen";
 import { LockedLevelScreen } from "./src/screens/LockedLevelScreen";
 import { SplashScreen } from "./src/screens/SplashScreen";
 import { HomeMenuScreen } from "./src/screens/HomeMenuScreen";
-import { ProfileScreen } from "./src/screens/ProfileScreen";
+import { ProfileStatsScreen } from "./src/screens/ProfileStatsScreen";
 import { RegionSelectScreen } from "./src/screens/RegionSelectScreen";
 import { AuthScreen } from "./src/screens/AuthScreen";
+import { SettingsScreen } from "./src/screens/SettingsScreen";
+import { StreakRewardsScreen } from "./src/screens/StreakRewardsScreen";
+
+import { DailyChallengesScreen } from "./src/screens/DailyChallengesScreen";
+import { ChallengeGameScreen } from "./src/screens/ChallengeGameScreen";
+import { ReturningPlayerScreen } from "./src/screens/ReturningPlayerScreen";
 
 import { useGameData } from "./src/hooks/useGameData";
 import { useAnswerHandlers } from "./src/hooks/useAnswerHandlers";
@@ -41,36 +50,73 @@ import { useProgress } from "./src/hooks/useProgress";
 import { useGameSession } from "./src/hooks/useGameSession";
 import { computeUpdatedStreak } from "./src/hooks/streakUtils";
 import { useShopHandlers } from "./src/hooks/useShopHandlers";
+import { useSound } from "./src/hooks/useSound";
 import { ThemeProvider } from "./src/contexts/ThemeContext";
 import { ToastProvider, useToast } from "./src/contexts/ToastContext";
+import {
+  AchievementProvider,
+  useAchievements,
+} from "./src/contexts/AchievementContext";
+import { SettingsProvider } from "./src/contexts/SettingsContext";
 import { ToastContainer } from "./src/ui/Toast";
 
 type Screen =
   | "splash"
+  | "returning_player"
   | "home"
   | "regions"
   | "venues"
   | "levels"
   | "playing"
   | "shop"
-  | "profile"
+  | "profile_stats"
   | "out_of_hearts"
   | "locked"
-  | "auth";
+  | "auth"
+  | "settings"
+  | "streak_rewards"
+  | "daily_challenges"
+  | "challenge_playing";
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <View style={{ flex: 1, backgroundColor: "#020014" }}>
+        <ThemeProvider>
+          <SettingsProvider>
+            <ToastProvider>
+              <AchievementProvider>
+                <AppContent />
+              </AchievementProvider>
+            </ToastProvider>
+          </SettingsProvider>
+        </ThemeProvider>
+      </View>
+    </SafeAreaProvider>
   );
 }
 
 function AppContent() {
   const [screen, setScreen] = React.useState<Screen>("splash");
+  const [currentChallenge, setCurrentChallenge] =
+    React.useState<DailyChallenge | null>(null);
+
+  // Challenge tracking state
+  const [challengeStartTime, setChallengeStartTime] = React.useState<
+    number | null
+  >(null);
+  const [challengeAnswers, setChallengeAnswers] = React.useState<boolean[]>([]);
+  const [currentStreak, setCurrentStreak] = React.useState<number>(0);
+  const [maxStreak, setMaxStreak] = React.useState<number>(0);
+  const [totalTimeSpent, setTotalTimeSpent] = React.useState<number>(0);
+  const [challengeSession, setChallengeSession] =
+    React.useState<GameSession | null>(null);
+
   const { toasts, showToast, hideToast } = useToast();
+  const { checkAndUnlockAchievement, getAchievementProgress } =
+    useAchievements();
+  const { playCorrectSound, playIncorrectSound, playLevelCompleteSound } =
+    useSound();
 
   const {
     profile,
@@ -91,6 +137,103 @@ function AppContent() {
     getLevelStatus,
     getLevelsForVenueWithStatus,
   } = useProgress({ activeProfileId, profileReady });
+
+  // Check for daily login bonuses when profile is ready
+  React.useEffect(() => {
+    if (!profileReady) return;
+
+    const checkDailyLoginBonus = async () => {
+      const { newDailyStreak, newLastActiveAt } = computeUpdatedStreak(profile);
+
+      if (newDailyStreak !== profile.dailyStreak) {
+        // User has logged in on a new day, award daily bonus
+        const { getStreakRewardForDay } = await import(
+          "./src/data/streakRewards"
+        );
+        const dailyBonus = getStreakRewardForDay(newDailyStreak);
+
+        const updatedProfile = {
+          ...profile,
+          dailyStreak: newDailyStreak,
+          lastActiveAt: newLastActiveAt,
+          coins: profile.coins + dailyBonus.coins,
+          xp: profile.xp + dailyBonus.xp,
+        };
+
+        await saveProfile(updatedProfile);
+
+        if (dailyBonus.xp > 0 || dailyBonus.coins > 0) {
+          showToast(
+            `Daily login bonus: +${dailyBonus.xp} XP, +${dailyBonus.coins} coins! 🔥`,
+            "success",
+            5000
+          );
+        }
+      }
+    };
+
+    checkDailyLoginBonus();
+  }, [profileReady, profile, saveProfile, showToast]);
+
+  // Check progress achievements when profile changes
+  React.useEffect(() => {
+    if (!profileReady) return;
+
+    // Check coin-based achievements
+    if (profile.coins >= 1000) {
+      checkAndUnlockAchievement("coin_collector");
+    }
+    if (profile.coins >= 5000) {
+      checkAndUnlockAchievement("millionaire");
+      checkAndUnlockAchievement("wealthy_wizard");
+    }
+
+    // Check XP-based achievements
+    if (profile.xp >= 1000) {
+      checkAndUnlockAchievement("xp_explorer");
+    }
+    if (profile.xp >= 5000) {
+      checkAndUnlockAchievement("xp_grinder");
+      checkAndUnlockAchievement("xp_master");
+    }
+
+    // Check level-based achievements
+    if (profile.level >= 5) {
+      checkAndUnlockAchievement("level_up");
+    }
+    if (profile.level >= 25) {
+      checkAndUnlockAchievement("ultimate_player");
+    }
+
+    // Check heart-based achievements
+    if (profile.hearts >= 10) {
+      checkAndUnlockAchievement("heart_hoarder");
+    }
+
+    // Check daily streak achievements
+    if (profile.dailyStreak >= 7) {
+      checkAndUnlockAchievement("week_warrior");
+      checkAndUnlockAchievement("quiz_addict"); // Same as week_warrior
+    }
+    if (profile.dailyStreak >= 30) {
+      checkAndUnlockAchievement("month_master");
+    }
+  }, [profileReady, profile, checkAndUnlockAchievement]);
+
+  // Determine if user should see returning player screen
+  const shouldShowReturningPlayer = React.useMemo(() => {
+    if (!profileReady || !profile.lastActiveAt) return false;
+
+    // Show if user has completed at least one level and has been away for more than 1 day
+    const hasPlayedBefore = progress.completedLevelIds.length > 0;
+    const lastActive = new Date(profile.lastActiveAt);
+    const now = new Date();
+    const daysSinceLastActive = Math.floor(
+      (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    return hasPlayedBefore && daysSinceLastActive >= 1;
+  }, [profileReady, profile.lastActiveAt, progress.completedLevelIds.length]);
 
   const {
     session,
@@ -131,10 +274,13 @@ function AppContent() {
   } = useGameData();
 
   const {
+    buyShopItem,
     handleBuyAskQuizzersUpgrade,
     handleBuyFiftyFiftyUpgrade,
     handleBuyHeart,
-  } = useShopHandlers({ profile, saveProfile });
+    getPurchaseHistory,
+    restorePurchases,
+  } = useShopHandlers({ profile, saveProfile, checkAndUnlockAchievement });
 
   const [lastAnswerTime] = React.useState(1500);
   const [selectedVenueId, setSelectedVenueId] = React.useState<string | null>(
@@ -206,8 +352,10 @@ function AppContent() {
     const lastAnswer = updated.answers[updated.answers.length - 1];
     if (lastAnswer) {
       if (lastAnswer.correct) {
+        playCorrectSound();
         showToast("Correct! 🎉", "success", 1500);
       } else {
+        playIncorrectSound();
         showToast("Incorrect 😔", "error", 1500);
       }
     }
@@ -221,6 +369,89 @@ function AppContent() {
     const accuracy = totalQuestions > 0 ? totalCorrect / totalQuestions : 0;
 
     if (updated.status === "passed") {
+      // Check achievements
+      checkAndUnlockAchievement("first_win"); // First level completion
+      checkAndUnlockAchievement(
+        "quiz_master",
+        getAchievementProgress("quiz_master") + 1
+      ); // Progress towards 10 levels
+
+      if (accuracy === 1) {
+        checkAndUnlockAchievement("perfect_score"); // 100% accuracy
+      }
+
+      // Check speed achievements
+      const avgTime =
+        updated.answers.reduce((sum, a) => sum + a.timeTakenMs, 0) /
+        updated.answers.length;
+      if (avgTime <= 3000) {
+        // Average under 3 seconds per question
+        checkAndUnlockAchievement("speed_demon");
+      }
+
+      // Check lifeline achievements
+      if (updated.usedLifelines.length === 0) {
+        checkAndUnlockAchievement("lifeline_avoider");
+        checkAndUnlockAchievement("self_made"); // Complete level without lifelines
+      }
+
+      // Check survivor achievement (complete level with 1 heart remaining)
+      if (profile.hearts === 1) {
+        checkAndUnlockAchievement("survivor");
+      }
+
+      // Check comeback kid achievement (wrong on first question but completed level)
+      const firstAnswer = updated.answers[0];
+      if (firstAnswer && !firstAnswer.correct && updated.status === "passed") {
+        checkAndUnlockAchievement("comeback_kid");
+      }
+
+      // Check combo king achievement (3 perfect scores in a row)
+      if (accuracy === 1) {
+        const perfectScoreProgress = getAchievementProgress("combo_king") + 1;
+        checkAndUnlockAchievement("combo_king", perfectScoreProgress);
+      } else {
+        // Reset combo progress if not a perfect score
+        // Note: We don't call checkAndUnlockAchievement with 0 here as it would create progress
+        // The progress will naturally reset when not incremented
+      }
+
+      // Check streak achievements
+      const currentStreak = profile.dailyStreak;
+      if (currentStreak >= 7) {
+        checkAndUnlockAchievement("week_warrior");
+      }
+      if (currentStreak >= 30) {
+        checkAndUnlockAchievement("month_master");
+      }
+
+      // Check level achievements
+      if (level.levelNumber >= 10) {
+        checkAndUnlockAchievement("level_legend");
+      }
+
+      // Check venue achievements
+      const venueId = level.venueId;
+      const venueLevels = getOrderedVenueLevels(venueId);
+      const completedVenueLevels = venueLevels.filter(level => 
+        progress.completedLevelIds.includes(level.id)
+      ).length + 1; // +1 for current completion
+
+      if (completedVenueLevels >= venueLevels.length) {
+        checkAndUnlockAchievement("venue_master");
+      }
+
+      // Track unique venues completed
+      const uniqueVenues = new Set(
+        progress.completedLevelIds.map(levelId => {
+          const level = getLevelById(levelId);
+          return level?.venueId;
+        }).filter(Boolean)
+      );
+      if (uniqueVenues.size >= 3) {
+        checkAndUnlockAchievement("venue_explorer");
+      }
+
       if (!progress.completedLevelIds.includes(level.id)) {
         const nextProgress: PlayerProgress = {
           ...progress,
@@ -257,6 +488,9 @@ function AppContent() {
       let bonusHearts = 0;
 
       if (levelsGained > 0) {
+        // Check level up achievement
+        checkAndUnlockAchievement("level_up");
+
         for (let i = 1; i <= levelsGained; i++) {
           const reachedLevel = profile.level + i;
 
@@ -306,6 +540,21 @@ function AppContent() {
         lastActiveAt: newLastActiveAt,
       });
 
+      // Check coin/XP achievements after profile update
+      if (newCoins >= 1000) {
+        checkAndUnlockAchievement("coin_collector");
+      }
+      if (newCoins >= 5000) {
+        checkAndUnlockAchievement("wealthy_wizard");
+      }
+
+      if (newXP >= 1000) {
+        checkAndUnlockAchievement("xp_explorer");
+      }
+      if (newXP >= 5000) {
+        checkAndUnlockAchievement("xp_master");
+      }
+
       setLastRewardSummary({
         xpEarned,
         coinsEarned: totalCoinsEarned,
@@ -317,6 +566,7 @@ function AppContent() {
         bonusHearts: bonusHearts + streakBonusHearts,
       });
 
+      playLevelCompleteSound();
       showToast(`Level ${level.levelNumber} completed! 🏆`, "success", 3000);
     } else if (updated.status === "failed") {
       const { newDailyStreak, newLastActiveAt } = computeUpdatedStreak(profile);
@@ -332,6 +582,15 @@ function AppContent() {
       }
 
       const heartsAfterFail = Math.max(0, profile.hearts - 1);
+
+      // Check failure-related achievements
+      const failedAttempts = getAchievementProgress("resilient_player") + 1;
+      checkAndUnlockAchievement("resilient_player", failedAttempts);
+
+      if (heartsAfterFail === 0) {
+        checkAndUnlockAchievement("heart_breaker");
+      }
+
       const newHearts = Math.min(
         MAX_HEARTS,
         heartsAfterFail + streakBonusHearts
@@ -372,6 +631,8 @@ function AppContent() {
     questionTimeLimitSeconds: QUESTION_TIME_LIMIT_SECONDS,
     getLevelById,
     onAnswerOutcome: applyAnswerOutcome,
+    checkAndUnlockAchievement,
+    profileHearts: profile.hearts,
   });
 
   // --- TIMER EFFECT (restored behaviour) ---
@@ -490,6 +751,12 @@ function AppContent() {
     const updatedSession = useLifeline(session, level, lifeline);
     setSession(updatedSession);
 
+    // Check lifeline usage achievements
+    const totalLifelinesUsed = updatedSession.usedLifelines.length;
+    if (totalLifelinesUsed >= 50) {
+      checkAndUnlockAchievement("lifeline_lover");
+    }
+
     if (lifeline === "ASK_QUIZZERS") {
       const question = getCurrentQuestion(updatedSession);
       if (!question) return;
@@ -514,6 +781,333 @@ function AppContent() {
     setScreen("levels");
   };
 
+  // Challenge handlers
+  const handleChallengeAnswer = React.useCallback(
+    (optionId: string, timeTaken: number) => {
+      if (!currentChallenge || challengeStartTime === null) return;
+
+      // Get the current question to check if answer is correct
+      const currentQuestionIndex = challengeSession?.currentQuestionIndex || 0;
+      const questionId = currentChallenge.questionIds[currentQuestionIndex];
+      const question = getCurrentQuestion({
+        currentQuestionIndex,
+        questionIds: currentChallenge.questionIds,
+      } as any);
+
+      if (!question) return;
+
+      const isCorrect = optionId === question.correctOptionId;
+
+      // Update tracking state
+      const newAnswers = [...challengeAnswers, isCorrect];
+      setChallengeAnswers(newAnswers);
+      setTotalTimeSpent((prev) => prev + timeTaken);
+
+      // Update streak
+      if (isCorrect) {
+        setCurrentStreak((prev) => {
+          const newStreak = prev + 1;
+          setMaxStreak((maxPrev) => Math.max(maxPrev, newStreak));
+          return newStreak;
+        });
+      } else {
+        setCurrentStreak(0);
+      }
+
+      // Check if challenge is completed
+      const totalQuestions = currentChallenge.questionCount;
+      const questionsAnswered = newAnswers.length;
+      const isLastQuestion = questionsAnswered === totalQuestions;
+
+      // Update challenge session
+      setChallengeSession((prev) => {
+        if (!prev) return prev;
+        const playerAnswer = {
+          questionId,
+          chosenOptionId: optionId,
+          correct: isCorrect,
+          timeTakenMs: timeTaken,
+        };
+        return {
+          ...prev,
+          currentQuestionIndex: prev.currentQuestionIndex + 1,
+          answers: [...prev.answers, playerAnswer],
+          correctCount: prev.correctCount + (isCorrect ? 1 : 0),
+          score: prev.score + (isCorrect ? 10 : 0), // Simple scoring
+        };
+      });
+
+      // For perfect_accuracy challenges, fail immediately on wrong answer
+      if (currentChallenge.type === "perfect_accuracy" && !isCorrect) {
+        // Record failure and lock for 24 hours
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+        const lockedUntil = new Date(
+          Date.now() + 24 * 60 * 60 * 1000
+        ).toISOString(); // 24 hours from now
+
+        const failureRecord = {
+          challengeId: currentChallenge.id,
+          date: today,
+          completed: false,
+          failed: true,
+          lockedUntil,
+          completedAt: new Date().toISOString(),
+        };
+
+        const updatedProgress = [
+          ...profile.dailyChallengeProgress,
+          failureRecord,
+        ];
+
+        // Update profile with challenge failure
+        saveProfile({
+          ...profile,
+          dailyChallengeProgress: updatedProgress,
+        });
+
+        showToast(
+          "Perfect accuracy challenge failed! You got a question wrong. 💪",
+          "warning"
+        );
+        setTimeout(() => {
+          setScreen("daily_challenges");
+          setCurrentChallenge(null);
+          // Reset challenge state
+          setChallengeStartTime(null);
+          setChallengeAnswers([]);
+          setCurrentStreak(0);
+          setMaxStreak(0);
+          setTotalTimeSpent(0);
+          setChallengeSession(null);
+        }, 2000);
+        return;
+      }
+
+      if (!isLastQuestion) {
+        // Challenge continues - advance to next question
+        return;
+      }
+
+      // All questions answered - check completion conditions
+      let challengeCompleted = false;
+      let finalScore = 0;
+      let finalAccuracy = 0;
+
+      switch (currentChallenge.type) {
+        case "speed_run":
+          // Must complete all questions within time limit
+          challengeCompleted =
+            totalTimeSpent <= (currentChallenge.timeLimitSeconds || 0) * 1000;
+          finalScore = challengeCompleted
+            ? Math.max(
+                0,
+                (currentChallenge.timeLimitSeconds || 0) * 1000 - totalTimeSpent
+              )
+            : 0;
+          break;
+
+        case "perfect_accuracy":
+          // Must get target accuracy or higher
+          finalAccuracy = newAnswers.filter(Boolean).length / newAnswers.length;
+          challengeCompleted =
+            finalAccuracy >= (currentChallenge.targetAccuracy || 1.0);
+          finalScore = Math.round(finalAccuracy * 100);
+          break;
+
+        case "streak_master":
+          // Must achieve target streak
+          challengeCompleted =
+            maxStreak >= (currentChallenge.targetStreak || 0);
+          finalScore = maxStreak;
+          break;
+
+        default:
+          // Default: complete if all questions answered
+          challengeCompleted = true;
+          finalAccuracy = newAnswers.filter(Boolean).length / newAnswers.length;
+          finalScore = Math.round(finalAccuracy * 100);
+      }
+
+      if (!challengeCompleted) {
+        // Challenge failed - record failure and lock for 24 hours
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+        const lockedUntil = new Date(
+          Date.now() + 24 * 60 * 60 * 1000
+        ).toISOString(); // 24 hours from now
+
+        const failureRecord = {
+          challengeId: currentChallenge.id,
+          date: today,
+          completed: false,
+          failed: true,
+          lockedUntil,
+          completedAt: new Date().toISOString(),
+        };
+
+        const updatedProgress = [
+          ...profile.dailyChallengeProgress,
+          failureRecord,
+        ];
+
+        // Update profile with challenge failure
+        saveProfile({
+          ...profile,
+          dailyChallengeProgress: updatedProgress,
+        });
+
+        showToast("Challenge failed! Try again tomorrow. 💪", "warning");
+        setTimeout(() => {
+          setScreen("daily_challenges");
+          setCurrentChallenge(null);
+          // Reset challenge state
+          setChallengeStartTime(null);
+          setChallengeAnswers([]);
+          setCurrentStreak(0);
+          setMaxStreak(0);
+          setTotalTimeSpent(0);
+          setChallengeSession(null);
+        }, 2000);
+        return;
+      }
+
+      // Challenge completed successfully!
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+      const completionRecord = {
+        challengeId: currentChallenge.id,
+        date: today,
+        completed: true,
+        failed: false,
+        score: finalScore,
+        accuracy: finalAccuracy,
+        timeTakenSeconds: totalTimeSpent / 1000,
+        completedAt: new Date().toISOString(),
+      };
+
+      const updatedProgress = [
+        ...profile.dailyChallengeProgress,
+        completionRecord,
+      ];
+
+      // Update profile with challenge completion
+      saveProfile({
+        ...profile,
+        dailyChallengeProgress: updatedProgress,
+        xp: profile.xp + currentChallenge.rewards.xp,
+        coins: profile.coins + currentChallenge.rewards.coins,
+        hearts: Math.min(
+          MAX_HEARTS,
+          profile.hearts + (currentChallenge.rewards.bonusHearts || 0)
+        ),
+      });
+
+      // Check achievements
+      checkAndUnlockAchievement("daily_warrior"); // First challenge completion
+      const totalChallengesCompleted = updatedProgress.length;
+      checkAndUnlockAchievement("challenge_master", totalChallengesCompleted);
+
+      // Check challenge-specific achievements
+      if (currentChallenge.type === "speed_run") {
+        const speedRunsCompleted = updatedProgress.filter(
+          (p) => p.challengeId.includes("speed_run") && p.completed
+        ).length;
+        checkAndUnlockAchievement("speed_runner", speedRunsCompleted);
+      } else if (currentChallenge.type === "perfect_accuracy") {
+        const perfectChallengesCompleted = updatedProgress.filter(
+          (p) => p.challengeId.includes("perfect_accuracy") && p.completed
+        ).length;
+        checkAndUnlockAchievement("perfectionist", perfectChallengesCompleted);
+      }
+
+      showToast(
+        `Challenge completed! +${currentChallenge.rewards.xp} XP, +${currentChallenge.rewards.coins} coins! 🎉`,
+        "success"
+      );
+
+      setTimeout(() => {
+        setScreen("daily_challenges");
+        setCurrentChallenge(null);
+        // Reset challenge state
+        setChallengeStartTime(null);
+        setChallengeAnswers([]);
+        setCurrentStreak(0);
+        setMaxStreak(0);
+        setTotalTimeSpent(0);
+        setChallengeSession(null);
+      }, 2000);
+    },
+    [
+      currentChallenge,
+      challengeStartTime,
+      challengeAnswers,
+      totalTimeSpent,
+      currentStreak,
+      maxStreak,
+      challengeSession,
+      profile,
+      saveProfile,
+      checkAndUnlockAchievement,
+      showToast,
+    ]
+  );
+
+  const handleChallengeLifeline = React.useCallback(
+    (lifelineType: LifelineType) => {
+      showToast(`${lifelineType} used! 💪`, "info");
+      // TODO: Implement lifeline logic for challenges
+    },
+    [showToast]
+  );
+
+  const handleChallengeTimeExpired = React.useCallback(() => {
+    if (!currentChallenge) return;
+
+    // For speed run challenges, time expiration means failure
+    if (currentChallenge.type === "speed_run") {
+      // Record failure and lock for 24 hours
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+      const lockedUntil = new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ).toISOString(); // 24 hours from now
+
+      const failureRecord = {
+        challengeId: currentChallenge.id,
+        date: today,
+        completed: false,
+        failed: true,
+        lockedUntil,
+        completedAt: new Date().toISOString(),
+      };
+
+      const updatedProgress = [
+        ...profile.dailyChallengeProgress,
+        failureRecord,
+      ];
+
+      // Update profile with challenge failure
+      saveProfile({
+        ...profile,
+        dailyChallengeProgress: updatedProgress,
+      });
+
+      showToast("Time's up! Speed run challenge failed. ⏰", "warning");
+      setTimeout(() => {
+        setScreen("daily_challenges");
+        setCurrentChallenge(null);
+        // Reset challenge state
+        setChallengeStartTime(null);
+        setChallengeAnswers([]);
+        setCurrentStreak(0);
+        setMaxStreak(0);
+        setTotalTimeSpent(0);
+        setChallengeSession(null);
+      }, 1000);
+      return;
+    }
+
+    // For other challenges, treat as wrong answer
+    handleChallengeAnswer("", 15000); // 15 seconds as time taken for wrong answer
+  }, [currentChallenge, showToast, handleChallengeAnswer]);
+
   const handleSelectVenue = (venueId: string) => {
     setSelectedVenueId(venueId);
     setSelectedLevelId(null);
@@ -523,7 +1117,24 @@ function AppContent() {
   // --- RENDER ---
 
   if (screen === "splash") {
-    return <SplashScreen onFinish={() => setScreen("home")} />;
+    return (
+      <SplashScreen
+        onFinish={() =>
+          setScreen(shouldShowReturningPlayer ? "returning_player" : "home")
+        }
+      />
+    );
+  }
+
+  if (screen === "returning_player") {
+    return (
+      <ReturningPlayerScreen
+        onContinue={() => setScreen("home")}
+        profile={profile}
+        progress={progress}
+        onProfileUpdate={saveProfile}
+      />
+    );
   }
 
   if (screen === "home") {
@@ -531,11 +1142,11 @@ function AppContent() {
       <>
         <HomeMenuScreen
           onPlaySinglePlayer={() => setScreen("regions")}
-          onOpenMultiplayer={() => {
-            // coming soon
-          }}
-          onOpenProfile={() => setScreen("profile")}
+          onOpenProfile={() => setScreen("profile_stats")}
           onOpenShop={() => setScreen("shop")}
+          onOpenSettings={() => setScreen("settings")}
+          onOpenStreakRewards={() => setScreen("streak_rewards")}
+          onOpenDailyChallenges={() => setScreen("daily_challenges")}
         />
         <ToastContainer toasts={toasts} onHideToast={hideToast} />
       </>
@@ -561,26 +1172,102 @@ function AppContent() {
         <AuthScreen
           onLinked={async (userId) => {
             await linkGuestProfileToAuthUser(userId);
-            setScreen("profile");
+            setScreen("profile_stats");
           }}
-          onBack={() => setScreen("profile")}
+          onBack={() => setScreen("profile_stats")}
         />
         <ToastContainer toasts={toasts} onHideToast={hideToast} />
       </>
     );
   }
 
-  if (screen === "profile") {
+  if (screen === "profile_stats") {
     const xpToNextLevel = profile.level * 100;
     return (
       <>
-        <ProfileScreen
+        <ProfileStatsScreen
           profile={profile}
+          progress={progress}
           xpToNextLevel={xpToNextLevel}
           isSignedIn={!!authUserId}
           onOpenAuth={() => setScreen("auth")}
           onLogout={handleLogout}
           onBack={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
+    );
+  }
+
+  if (screen === "streak_rewards") {
+    return (
+      <>
+        <StreakRewardsScreen
+          profile={profile}
+          onBack={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
+    );
+  }
+
+  if (screen === "daily_challenges") {
+    return (
+      <>
+        <DailyChallengesScreen
+          profile={profile}
+          onStartChallenge={(challenge) => {
+            setCurrentChallenge(challenge);
+            // Reset challenge tracking state
+            setChallengeStartTime(Date.now());
+            setChallengeAnswers([]);
+            setCurrentStreak(0);
+            setMaxStreak(0);
+            setTotalTimeSpent(0);
+
+            // Create challenge session
+            const newSession: GameSession = {
+              id: `challenge_${challenge.id}_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 9)}`,
+              levelId: `challenge_${challenge.id}`,
+              questionIds: challenge.questionIds,
+              currentQuestionIndex: 0,
+              score: 0,
+              livesRemaining: 3,
+              usedLifelines: [],
+              answers: [],
+              startedAt: Date.now(),
+              status: "in_progress",
+              correctCount: 0,
+            };
+            setChallengeSession(newSession);
+
+            setScreen("challenge_playing");
+          }}
+          onBack={() => setScreen("home")}
+        />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
+    );
+  }
+
+  if (screen === "challenge_playing") {
+    if (!currentChallenge || !challengeSession) {
+      // Fallback if no challenge is set
+      setScreen("daily_challenges");
+      return null;
+    }
+
+    return (
+      <>
+        <ChallengeGameScreen
+          session={challengeSession}
+          challenge={currentChallenge}
+          onAnswer={handleChallengeAnswer}
+          onUseLifeline={handleChallengeLifeline}
+          onTimeExpired={handleChallengeTimeExpired}
+          onBack={() => setScreen("daily_challenges")}
         />
         <ToastContainer toasts={toasts} onHideToast={hideToast} />
       </>
@@ -618,11 +1305,19 @@ function AppContent() {
       <>
         <ShopScreen
           profile={profile}
-          onBuyAskQuizzersUpgrade={handleBuyAskQuizzersUpgrade}
-          onBuyFiftyFiftyUpgrade={handleBuyFiftyFiftyUpgrade}
-          onBuyHeart={handleBuyHeart}
+          onBuyItem={buyShopItem}
+          onRestorePurchases={restorePurchases}
           onBack={() => setScreen("home")}
         />
+        <ToastContainer toasts={toasts} onHideToast={hideToast} />
+      </>
+    );
+  }
+
+  if (screen === "settings") {
+    return (
+      <>
+        <SettingsScreen onBack={() => setScreen("home")} />
         <ToastContainer toasts={toasts} onHideToast={hideToast} />
       </>
     );

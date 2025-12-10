@@ -80,6 +80,8 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
     lastHeartUpdateAt: Date.now(),
     dailyStreak: 0,
     lastActiveAt: null,
+    dailyChallengeProgress: [],
+    claimedStreakRewards: [],
   });
 
   const [guestProfileId, setGuestProfileId] = React.useState<string | null>(
@@ -270,6 +272,8 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
                 : Date.now(),
             dailyStreak: dataFromSupabase.daily_streak ?? 0,
             lastActiveAt: dataFromSupabase.last_active_at ?? null,
+            dailyChallengeProgress: [], // TODO: Load from Supabase when schema is updated
+            claimedStreakRewards: [], // TODO: Load from Supabase when schema is updated
           };
         } else {
           const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
@@ -288,6 +292,8 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
               lastHeartUpdateAt: parsed.lastHeartUpdateAt ?? Date.now(),
               dailyStreak: parsed.dailyStreak ?? 0,
               lastActiveAt: parsed.lastActiveAt ?? null,
+              dailyChallengeProgress: parsed.dailyChallengeProgress ?? [],
+              claimedStreakRewards: parsed.claimedStreakRewards ?? [],
             };
           } else {
             baseProfile = {
@@ -303,6 +309,8 @@ export const usePlayerProfile = (): UsePlayerProfileResult => {
               lastHeartUpdateAt: Date.now(),
               dailyStreak: 0,
               lastActiveAt: null,
+              dailyChallengeProgress: [],
+              claimedStreakRewards: [],
             };
           }
         }

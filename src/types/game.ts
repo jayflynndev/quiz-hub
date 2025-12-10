@@ -5,7 +5,6 @@ export type VenueId = string;
 export type LevelId = string;
 export type QuestionId = string;
 
-export type LevelType = "normal" | "speed" | "boss";
 export type LifelineType = "FIFTY_FIFTY" | "ASK_FRIENDS" | "ASK_QUIZZERS";
 export type SessionStatus = "in_progress" | "passed" | "failed";
 
@@ -31,6 +30,9 @@ export interface Question {
 
   // NEW: global difficulty tagging for pool-based selection
   difficulty?: QuestionDifficulty;
+
+  // NEW: category for filtering questions by theme
+  category: string;
 
   text: string;
   options: { id: string; text: string }[];
@@ -74,14 +76,14 @@ export interface Region {
 
 // ---- Progress / ticks (placeholder for later) ----
 
-export type TickRarity = "bronze" | "silver" | "gold" | "diamond";
+// export type TickRarity = "bronze" | "silver" | "gold" | "diamond";
 
-export interface TickState {
-  id: string;
-  regionId: RegionId;
-  rarity: TickRarity;
-  earnedAt: string;
-}
+// export interface TickState {
+//   id: string;
+//   regionId: RegionId;
+//   rarity: TickRarity;
+//   earnedAt: string;
+// }
 
 // ---- Runtime / session state ----
 
@@ -131,6 +133,10 @@ export interface PlayerProfile {
   lastHeartUpdateAt?: number;
   dailyStreak: number; // 👈 new
   lastActiveAt: string | null; // ISO date string "YYYY-MM-DD" or null
+  dailyChallengeProgress: DailyChallengeProgress[]; // Track completed daily challenges
+  claimedStreakRewards: string[]; // Array of claimed streak reward IDs
+  adsRemoved?: boolean; // Whether ads have been removed via purchase
+  unlockedThemes?: string[]; // Array of unlocked theme IDs
 }
 
 export interface RewardSummary {
@@ -142,4 +148,61 @@ export interface RewardSummary {
   result: "passed" | "failed";
   bonusAskQuizzers?: number;
   bonusHearts?: number;
+}
+
+// ---- Daily Challenges ----
+
+export type DailyChallengeType =
+  | "speed_run"
+  | "perfect_accuracy"
+  | "streak_master"
+  | "category_specialist"
+  | "time_limited";
+
+export interface DailyChallenge {
+  id: string;
+  type: DailyChallengeType;
+  title: string;
+  description: string;
+  icon: string;
+  difficulty: "easy" | "medium" | "hard";
+  questionCount: number;
+  timeLimitSeconds?: number; // For time-limited challenges
+  targetAccuracy?: number; // For accuracy challenges (0-1)
+  targetStreak?: number; // For streak challenges
+  categoryFilter?: string; // For category specialist challenges
+  rewards: {
+    xp: number;
+    coins: number;
+    bonusHearts?: number;
+  };
+  questionIds: string[]; // Pre-selected questions for this challenge
+}
+
+export interface DailyChallengeProgress {
+  challengeId: string;
+  date: string; // YYYY-MM-DD format
+  completed: boolean;
+  failed: boolean;
+  lockedUntil?: string; // ISO timestamp when challenge unlocks again
+  score?: number;
+  accuracy?: number;
+  timeTakenSeconds?: number;
+  completedAt?: string; // ISO timestamp
+}
+
+// ---- Streak Rewards ----
+
+export interface StreakReward {
+  id: string;
+  streakDays: number;
+  title: string;
+  description: string;
+  icon: string;
+  rewards: {
+    xp: number;
+    coins: number;
+    bonusHearts?: number;
+  };
+  claimed: boolean;
 }

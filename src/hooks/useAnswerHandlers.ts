@@ -6,6 +6,7 @@ import {
 } from "../engine/gameEngine";
 import type { GameSession, LevelConfig, LevelId } from "../types/game";
 import { useToast } from "../contexts/ToastContext";
+import type { AchievementId } from "../types/achievements";
 
 interface UseAnswerHandlersArgs {
   session: GameSession | null;
@@ -16,6 +17,8 @@ interface UseAnswerHandlersArgs {
   questionTimeLimitSeconds: number;
   getLevelById: (id: LevelId | null) => LevelConfig | null;
   onAnswerOutcome: (updated: GameSession, level: LevelConfig) => void;
+  checkAndUnlockAchievement?: (achievementId: AchievementId, progress?: number) => void;
+  profileHearts?: number;
 }
 
 interface UseAnswerHandlersResult {
@@ -36,6 +39,8 @@ export const useAnswerHandlers = (
     questionTimeLimitSeconds,
     getLevelById,
     onAnswerOutcome,
+    checkAndUnlockAchievement,
+    profileHearts,
   } = args;
 
   const handleAnswer = React.useCallback(
@@ -54,6 +59,16 @@ export const useAnswerHandlers = (
         optionId,
         lastAnswerTime
       );
+
+      // Check time_waster achievement (took more than 30 seconds)
+      if (lastAnswerTime > 30000) {
+        checkAndUnlockAchievement?.("time_waster");
+      }
+
+      // Check lucky_guess achievement (correct answer on last heart)
+      if (profileHearts === 1 && updated.answers[updated.answers.length - 1]?.correct) {
+        checkAndUnlockAchievement?.("lucky_guess");
+      }
 
       // Preserve the slight delay for UI feedback
       setTimeout(() => {

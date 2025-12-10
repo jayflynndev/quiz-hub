@@ -86,7 +86,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.appTag}>Account</Text>
-        <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Hub</Text>
         <Text style={styles.appSubtitle}>
           Sign in to sync your quiz journey across devices.
         </Text>
@@ -95,9 +95,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLinked, onBack }) => {
       {/* Card */}
       <View style={styles.cardOuter}>
         <View style={styles.cardInner}>
-          <View style={styles.cardHighlightStrip} />
+          <View style={[styles.cardHighlightStrip, styles.authStrip]} />
 
-          <Text style={styles.headerText}>Save Your Progress</Text>
+          <Text style={styles.cardTitle}>🔐 Save Your Progress</Text>
+
           <Text style={styles.subHeader}>
             Create an account or sign in to keep XP, coins and hearts linked to
             you.
@@ -188,7 +189,8 @@ const styles = StyleSheet.create({
   },
   cardInner: {
     borderRadius: 22,
-    paddingVertical: 18,
+    paddingTop: 58, // 40 for strip + 18 for spacing
+    paddingBottom: 18,
     paddingHorizontal: 18,
     backgroundColor: "rgba(15,23,42,0.97)",
     borderWidth: 1,
@@ -199,7 +201,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 12,
     overflow: "hidden",
-    marginTop: 8,
   },
   cardHighlightStrip: {
     position: "absolute",
@@ -207,8 +208,23 @@ const styles = StyleSheet.create({
     left: -20,
     right: -20,
     height: 40,
-    backgroundColor: "rgba(59,130,246,0.45)",
     opacity: 0.7,
+  },
+  authStrip: {
+    backgroundColor: "rgba(139,92,246,0.45)", // purple/violet
+  },
+  cardTitle: {
+    position: "absolute",
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 40,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: TEXT_MAIN,
+    textAlign: "center",
+    textAlignVertical: "center",
+    lineHeight: 40,
   },
   headerText: {
     fontSize: 18,

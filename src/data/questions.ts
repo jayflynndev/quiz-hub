@@ -8,6 +8,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "1",
     difficulty: "entry",
+    category: "GK",
     text: "What color is the sky on a clear day?",
     options: [
       { id: "a", text: "Blue" },
@@ -20,6 +21,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "2",
     difficulty: "entry",
+    category: "GK",
     text: "What is 2 + 2?",
     options: [
       { id: "a", text: "3" },
@@ -32,6 +34,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "3",
     difficulty: "entry",
+    category: "GK",
     text: "Which animal says 'moo'?",
     options: [
       { id: "a", text: "Cat" },
@@ -44,6 +47,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "4",
     difficulty: "entry",
+    category: "GK",
     text: "What do you drink from a bottle of water?",
     options: [
       { id: "a", text: "Water" },
@@ -56,6 +60,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "5",
     difficulty: "entry",
+    category: "GK",
     text: "What is the first month of the year?",
     options: [
       { id: "a", text: "March" },
@@ -68,6 +73,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "6",
     difficulty: "entry",
+    category: "GK",
     text: "Which shape has three sides?",
     options: [
       { id: "a", text: "Square" },
@@ -80,6 +86,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "7",
     difficulty: "entry",
+    category: "GK",
     text: "What do bees make?",
     options: [
       { id: "a", text: "Milk" },
@@ -92,6 +99,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "8",
     difficulty: "entry",
+    category: "GK",
     text: "How many days are in a week?",
     options: [
       { id: "a", text: "5" },
@@ -104,6 +112,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "9",
     difficulty: "entry",
+    category: "GK",
     text: "Which fruit is typically yellow?",
     options: [
       { id: "a", text: "Banana" },
@@ -116,6 +125,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "10",
     difficulty: "entry",
+    category: "GK",
     text: "What do you wear on your feet?",
     options: [
       { id: "a", text: "Shoes" },
@@ -128,6 +138,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "11",
     difficulty: "entry",
+    category: "GK",
     text: "How many legs does a spider have?",
     options: [
       { id: "a", text: "6" },
@@ -140,6 +151,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "12",
     difficulty: "entry",
+    category: "GK",
     text: "Which one is a fruit?",
     options: [
       { id: "a", text: "Carrot" },
@@ -152,6 +164,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "13",
     difficulty: "entry",
+    category: "GK",
     text: "What does a thermometer measure?",
     options: [
       { id: "a", text: "Speed" },
@@ -164,6 +177,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "14",
     difficulty: "entry",
+    category: "GK",
     text: "Which season is the warmest?",
     options: [
       { id: "a", text: "Winter" },
@@ -176,6 +190,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "15",
     difficulty: "entry",
+    category: "GK",
     text: "Which animal barks?",
     options: [
       { id: "a", text: "Dog" },
@@ -188,6 +203,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "16",
     difficulty: "entry",
+    category: "GK",
     text: "How many wheels does a bicycle have?",
     options: [
       { id: "a", text: "1" },
@@ -200,6 +216,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "17",
     difficulty: "entry",
+    category: "GK",
     text: "Which is used to write?",
     options: [
       { id: "a", text: "Pen" },
@@ -212,6 +229,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "18",
     difficulty: "entry",
+    category: "GK",
     text: "What do plants need to grow?",
     options: [
       { id: "a", text: "Sunlight" },
@@ -224,6 +242,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "19",
     difficulty: "entry",
+    category: "GK",
     text: "Which one is a pet?",
     options: [
       { id: "a", text: "Lion" },
@@ -236,6 +255,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "20",
     difficulty: "entry",
+    category: "GK",
     text: "How many hours are in a day?",
     options: [
       { id: "a", text: "12" },
@@ -251,6 +271,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "21",
     difficulty: "easy",
+    category: "GK",
     text: "Which country is home to the Eiffel Tower?",
     options: [
       { id: "a", text: "Italy" },
@@ -263,6 +284,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "22",
     difficulty: "easy",
+    category: "GK",
     text: "Which ocean lies to the east of the United States?",
     options: [
       { id: "a", text: "Indian Ocean" },
@@ -275,6 +297,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "23",
     difficulty: "easy",
+    category: "GK",
     text: "Which musical instrument has keys and pedals?",
     options: [
       { id: "a", text: "Guitar" },
@@ -287,6 +310,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "24",
     difficulty: "easy",
+    category: "GK",
     text: "What is H2O commonly known as?",
     options: [
       { id: "a", text: "Salt" },
@@ -299,6 +323,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "25",
     difficulty: "easy",
+    category: "GK",
     text: "Which planet is known as the Red Planet?",
     options: [
       { id: "a", text: "Mars" },
@@ -311,6 +336,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "26",
     difficulty: "easy",
+    category: "GK",
     text: "Who wrote 'Harry Potter'?",
     options: [
       { id: "a", text: "Suzanne Collins" },
@@ -323,6 +349,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "27",
     difficulty: "easy",
+    category: "GK",
     text: "What is the largest mammal?",
     options: [
       { id: "a", text: "Elephant" },
@@ -335,6 +362,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "28",
     difficulty: "easy",
+    category: "GK",
     text: "Which sport uses a racket and a shuttlecock?",
     options: [
       { id: "a", text: "Tennis" },
@@ -347,6 +375,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "29",
     difficulty: "easy",
+    category: "GK",
     text: "Which continent is Egypt in?",
     options: [
       { id: "a", text: "Asia" },
@@ -359,6 +388,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "30",
     difficulty: "easy",
+    category: "GK",
     text: "What gas do plants absorb from the air?",
     options: [
       { id: "a", text: "Nitrogen" },
@@ -371,6 +401,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "31",
     difficulty: "easy",
+    category: "GK",
     text: "Which planet is known as the Red Planet?",
     options: [
       { id: "a", text: "Mars" },
@@ -383,6 +414,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "32",
     difficulty: "easy",
+    category: "GK",
     text: "What is the tallest mountain in the world?",
     options: [
       { id: "a", text: "K2" },
@@ -395,6 +427,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "33",
     difficulty: "easy",
+    category: "GK",
     text: "What is the boiling point of water at sea level?",
     options: [
       { id: "a", text: "50°C" },
@@ -407,6 +440,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "34",
     difficulty: "easy",
+    category: "GK",
     text: "How many days are in a leap year?",
     options: [
       { id: "a", text: "365" },
@@ -419,6 +453,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "35",
     difficulty: "easy",
+    category: "GK",
     text: "Which animal is known as man's best friend?",
     options: [
       { id: "a", text: "Cat" },
@@ -431,6 +466,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "36",
     difficulty: "easy",
+    category: "GK",
     text: "What gas do plants absorb from the atmosphere?",
     options: [
       { id: "a", text: "Oxygen" },
@@ -443,6 +479,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "37",
     difficulty: "easy",
+    category: "GK",
     text: "Which ocean is the largest?",
     options: [
       { id: "a", text: "Atlantic Ocean" },
@@ -455,6 +492,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "38",
     difficulty: "easy",
+    category: "GK",
     text: "What colour are most buses in London?",
     options: [
       { id: "a", text: "Blue" },
@@ -467,6 +505,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "39",
     difficulty: "easy",
+    category: "GK",
     text: "What is the primary ingredient in guacamole?",
     options: [
       { id: "a", text: "Tomato" },
@@ -479,6 +518,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "40",
     difficulty: "easy",
+    category: "GK",
     text: "What is the largest planet in our solar system?",
     options: [
       { id: "a", text: "Neptune" },
@@ -492,6 +532,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "41",
     difficulty: "average",
+    category: "GK",
     text: "Which country invented paper?",
     options: [
       { id: "a", text: "Egypt" },
@@ -504,6 +545,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "42",
     difficulty: "average",
+    category: "GK",
     text: "What is the capital city of Switzerland?",
     options: [
       { id: "a", text: "Zurich" },
@@ -516,6 +558,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "43",
     difficulty: "average",
+    category: "GK",
     text: "Who painted 'The Starry Night'?",
     options: [
       { id: "a", text: "Claude Monet" },
@@ -528,6 +571,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "44",
     difficulty: "average",
+    category: "GK",
     text: "What is the smallest country in the world by area?",
     options: [
       { id: "a", text: "San Marino" },
@@ -540,6 +584,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "45",
     difficulty: "average",
+    category: "GK",
     text: "Which metal has the chemical symbol 'Fe'?",
     options: [
       { id: "a", text: "Iron" },
@@ -552,6 +597,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "46",
     difficulty: "average",
+    category: "GK",
     text: "In which year did the Titanic sink?",
     options: [
       { id: "a", text: "1910" },
@@ -564,6 +610,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "47",
     difficulty: "average",
+    category: "GK",
     text: "Which country has the most pyramids?",
     options: [
       { id: "a", text: "Egypt" },
@@ -576,6 +623,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "48",
     difficulty: "average",
+    category: "GK",
     text: "Which element is needed for muscles to contract?",
     options: [
       { id: "a", text: "Calcium" },
@@ -588,6 +636,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "49",
     difficulty: "average",
+    category: "GK",
     text: "Which European city hosts the 'Running of the Bulls'?",
     options: [
       { id: "a", text: "Seville" },
@@ -600,6 +649,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "50",
     difficulty: "average",
+    category: "GK",
     text: "What is the longest river in Europe?",
     options: [
       { id: "a", text: "Danube" },
@@ -612,6 +662,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "51",
     difficulty: "average",
+    category: "GK",
     text: "Who wrote 'Great Expectations'?",
     options: [
       { id: "a", text: "Charles Dickens" },
@@ -624,6 +675,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "52",
     difficulty: "average",
+    category: "GK",
     text: "Which instrument measures atmospheric pressure?",
     options: [
       { id: "a", text: "Barometer" },
@@ -636,6 +688,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "53",
     difficulty: "average",
+    category: "GK",
     text: "Which British monarch reigned for just 9 days?",
     options: [
       { id: "a", text: "Mary I" },
@@ -648,6 +701,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "54",
     difficulty: "average",
+    category: "GK",
     text: "The human heart has how many chambers?",
     options: [
       { id: "a", text: "2" },
@@ -660,6 +714,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "55",
     difficulty: "average",
+    category: "GK",
     text: "What is the capital of New Zealand?",
     options: [
       { id: "a", text: "Auckland" },
@@ -672,6 +727,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "56",
     difficulty: "average",
+    category: "GK",
     text: "What is the main ingredient in black pudding?",
     options: [
       { id: "a", text: "Lamb fat" },
@@ -684,6 +740,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "57",
     difficulty: "average",
+    category: "GK",
     text: "How many stripes are on the US flag?",
     options: [
       { id: "a", text: "10" },
@@ -696,6 +753,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "58",
     difficulty: "average",
+    category: "GK",
     text: "What does DNA stand for?",
     options: [
       { id: "a", text: "Deoxyribonucleic acid" },
@@ -708,6 +766,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "59",
     difficulty: "average",
+    category: "GK",
     text: "Which city is known as 'The Eternal City'?",
     options: [
       { id: "a", text: "Athens" },
@@ -720,6 +779,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "60",
     difficulty: "average",
+    category: "GK",
     text: "Which artist released the 2015 album '25'?",
     options: [
       { id: "a", text: "Taylor Swift" },
@@ -733,6 +793,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "61",
     difficulty: "tricky",
+    category: "GK",
     text: "Which planet has the longest day (rotation period)?",
     options: [
       { id: "a", text: "Mercury" },
@@ -745,6 +806,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "62",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the rarest blood type?",
     options: [
       { id: "a", text: "O-" },
@@ -757,6 +819,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "63",
     difficulty: "tricky",
+    category: "GK",
     text: "Which mammal has the most powerful bite?",
     options: [
       { id: "a", text: "Hippopotamus" },
@@ -769,6 +832,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "64",
     difficulty: "tricky",
+    category: "GK",
     text: 'Which Shakespeare play contains the line "The lady doth protest too much, methinks"?',
     options: [
       { id: "a", text: "Hamlet" },
@@ -781,6 +845,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "65",
     difficulty: "tricky",
+    category: "GK",
     text: "Which country consumes the most coffee per capita?",
     options: [
       { id: "a", text: "USA" },
@@ -793,6 +858,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "66",
     difficulty: "tricky",
+    category: "GK",
     text: "What was the first video ever uploaded to YouTube?",
     options: [
       { id: "a", text: "A day at the zoo" },
@@ -805,6 +871,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "67",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the capital of Kazakhstan?",
     options: [
       { id: "a", text: "Almaty" },
@@ -817,6 +884,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "68",
     difficulty: "tricky",
+    category: "GK",
     text: "Which element has the highest melting point?",
     options: [
       { id: "a", text: "Carbon" },
@@ -829,6 +897,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "69",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the longest bone in the human body?",
     options: [
       { id: "a", text: "Tibia" },
@@ -841,6 +910,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "70",
     difficulty: "tricky",
+    category: "GK",
     text: "Which country has the longest coastline?",
     options: [
       { id: "a", text: "Australia" },
@@ -853,6 +923,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "71",
     difficulty: "tricky",
+    category: "GK",
     text: "Which organelle is known as the 'powerhouse of the cell'?",
     options: [
       { id: "a", text: "Nucleus" },
@@ -865,6 +936,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "72",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the most spoken native language in Africa?",
     options: [
       { id: "a", text: "Swahili" },
@@ -877,6 +949,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "73",
     difficulty: "tricky",
+    category: "GK",
     text: "In computing, what does the acronym 'GPU' stand for?",
     options: [
       { id: "a", text: "General Processing Unit" },
@@ -889,6 +962,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "74",
     difficulty: "tricky",
+    category: "GK",
     text: "Which country produces the most cocoa?",
     options: [
       { id: "a", text: "Ghana" },
@@ -901,6 +975,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "75",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the smallest prime number?",
     options: [
       { id: "a", text: "0" },
@@ -913,6 +988,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "76",
     difficulty: "tricky",
+    category: "GK",
     text: "Which country is also known as the Hellenic Republic?",
     options: [
       { id: "a", text: "Italy" },
@@ -925,6 +1001,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "77",
     difficulty: "tricky",
+    category: "GK",
     text: "Which city does the River Danube *not* flow through?",
     options: [
       { id: "a", text: "Budapest" },
@@ -937,6 +1014,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "78",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the capital of Lithuania?",
     options: [
       { id: "a", text: "Vilnius" },
@@ -949,6 +1027,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "79",
     difficulty: "tricky",
+    category: "GK",
     text: "What is the chemical formula for table salt?",
     options: [
       { id: "a", text: "NaCl" },
@@ -961,6 +1040,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "80",
     difficulty: "tricky",
+    category: "GK",
     text: "Who discovered penicillin?",
     options: [
       { id: "a", text: "Louis Pasteur" },
@@ -975,6 +1055,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "81",
     difficulty: "hard",
+    category: "GK",
     text: "What is the only metal that is liquid at room temperature?",
     options: [
       { id: "a", text: "Mercury" },
@@ -987,6 +1068,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "82",
     difficulty: "hard",
+    category: "GK",
     text: "Which mathematician invented the notation for the integral sign?",
     options: [
       { id: "a", text: "Isaac Newton" },
@@ -999,6 +1081,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "83",
     difficulty: "hard",
+    category: "GK",
     text: "Which country was formerly known as Abyssinia?",
     options: [
       { id: "a", text: "Eritrea" },
@@ -1011,6 +1094,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "84",
     difficulty: "hard",
+    category: "GK",
     text: "What is the rarest naturally occurring element on Earth?",
     options: [
       { id: "a", text: "Astatine" },
@@ -1023,6 +1107,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "85",
     difficulty: "hard",
+    category: "GK",
     text: "Which author wrote 'The Master and Margarita'?",
     options: [
       { id: "a", text: "Boris Pasternak" },
@@ -1035,6 +1120,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "86",
     difficulty: "hard",
+    category: "GK",
     text: "Which scientist proposed the uncertainty principle?",
     options: [
       { id: "a", text: "Erwin Schrödinger" },
@@ -1047,6 +1133,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "87",
     difficulty: "hard",
+    category: "GK",
     text: "Which is the longest river in Asia?",
     options: [
       { id: "a", text: "Yangtze" },
@@ -1059,6 +1146,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "88",
     difficulty: "hard",
+    category: "GK",
     text: "Which ancient civilisation built the city of Carthage?",
     options: [
       { id: "a", text: "Phoenicians" },
@@ -1071,6 +1159,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "89",
     difficulty: "hard",
+    category: "GK",
     text: "In computing, what does the acronym RAID stand for?",
     options: [
       { id: "a", text: "Random Access Integrated Disk" },
@@ -1083,6 +1172,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "90",
     difficulty: "hard",
+    category: "GK",
     text: "Which physicist discovered the neutron?",
     options: [
       { id: "a", text: "James Chadwick" },
@@ -1095,6 +1185,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "91",
     difficulty: "hard",
+    category: "GK",
     text: "Which African country has Portuguese as its official language?",
     options: [
       { id: "a", text: "Ghana" },
@@ -1107,6 +1198,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "92",
     difficulty: "hard",
+    category: "GK",
     text: "What is the SI unit of electrical resistance?",
     options: [
       { id: "a", text: "Ohm" },
@@ -1119,6 +1211,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "93",
     difficulty: "hard",
+    category: "GK",
     text: "Which composer wrote 'The Four Seasons'?",
     options: [
       { id: "a", text: "Johann Sebastian Bach" },
@@ -1131,6 +1224,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "94",
     difficulty: "hard",
+    category: "GK",
     text: "What is the main ingredient in the Japanese dish miso?",
     options: [
       { id: "a", text: "Rice" },
@@ -1143,6 +1237,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "95",
     difficulty: "hard",
+    category: "GK",
     text: "Which scientist coined the term 'cell' after observing cork?",
     options: [
       { id: "a", text: "Antonie van Leeuwenhoek" },
@@ -1155,6 +1250,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "96",
     difficulty: "hard",
+    category: "GK",
     text: "Which country has the city of Timbuktu?",
     options: [
       { id: "a", text: "Niger" },
@@ -1167,6 +1263,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "97",
     difficulty: "hard",
+    category: "GK",
     text: "What is the heaviest naturally occurring noble gas?",
     options: [
       { id: "a", text: "Argon" },
@@ -1179,6 +1276,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "98",
     difficulty: "hard",
+    category: "GK",
     text: "Which empire was ruled by Genghis Khan?",
     options: [
       { id: "a", text: "Ottoman Empire" },
@@ -1191,6 +1289,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "99",
     difficulty: "hard",
+    category: "GK",
     text: "Which physicist is known for the thought experiment involving a cat in a box?",
     options: [
       { id: "a", text: "Heisenberg" },
@@ -1203,6 +1302,688 @@ export const QUESTIONS: Question[] = [
   {
     id: "100",
     difficulty: "hard",
+    category: "GK",
+    text: "What is the deepest point in the Earth's oceans?",
+    options: [
+      { id: "a", text: "Tonga Trench" },
+      { id: "b", text: "Puerto Rico Trench" },
+      { id: "c", text: "Mariana Trench" },
+      { id: "d", text: "Java Trench" },
+    ],
+    correctOptionId: "c",
+  },
+
+  {
+    id: "101",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "Which sport is played at Wimbledon?",
+    options: [
+      { id: "a", text: "Football" },
+      { id: "b", text: "Tennis" },
+      { id: "c", text: "Cricket" },
+      { id: "d", text: "Rugby" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "102",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "How many players are on a football team on the pitch?",
+    options: [
+      { id: "a", text: "9" },
+      { id: "b", text: "10" },
+      { id: "c", text: "11" },
+      { id: "d", text: "12" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "103",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "What does NBA stand for?",
+    options: [
+      { id: "a", text: "National Basketball Association" },
+      { id: "b", text: "National Baseball Association" },
+      { id: "c", text: "North Basketball Alliance" },
+      { id: "d", text: "National Basketball Alliance" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "104",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "Which country won the 2018 FIFA World Cup?",
+    options: [
+      { id: "a", text: "Brazil" },
+      { id: "b", text: "Germany" },
+      { id: "c", text: "France" },
+      { id: "d", text: "Argentina" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "105",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "In cricket, what is a 'century'?",
+    options: [
+      { id: "a", text: "100 runs by a batsman" },
+      { id: "b", text: "100 wickets by a bowler" },
+      { id: "c", text: "100 overs in a match" },
+      { id: "d", text: "100 catches by a fielder" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "106",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "Which tennis player has won the most Grand Slam singles titles?",
+    options: [
+      { id: "a", text: "Roger Federer" },
+      { id: "b", text: "Rafael Nadal" },
+      { id: "c", text: "Novak Djokovic" },
+      { id: "d", text: "Serena Williams" },
+    ],
+    correctOptionId: "d",
+  },
+  {
+    id: "107",
+    difficulty: "tricky",
+    category: "SPORTS",
+    text: "What is the maximum score possible in ten-pin bowling?",
+    options: [
+      { id: "a", text: "200" },
+      { id: "b", text: "250" },
+      { id: "c", text: "300" },
+      { id: "d", text: "350" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "108",
+    difficulty: "tricky",
+    category: "SPORTS",
+    text: "Which Formula 1 driver has won the most World Championships?",
+    options: [
+      { id: "a", text: "Ayrton Senna" },
+      { id: "b", text: "Michael Schumacher" },
+      { id: "c", text: "Lewis Hamilton" },
+      { id: "d", text: "Alain Prost" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "130",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "Which country has won the most FIFA World Cups?",
+    options: [
+      { id: "a", text: "Germany" },
+      { id: "b", text: "Brazil" },
+      { id: "c", text: "Argentina" },
+      { id: "d", text: "Italy" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "131",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "What sport is played at Lord's Cricket Ground?",
+    options: [
+      { id: "a", text: "Football" },
+      { id: "b", text: "Cricket" },
+      { id: "c", text: "Rugby" },
+      { id: "d", text: "Tennis" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "132",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "How many players are on a rugby team?",
+    options: [
+      { id: "a", text: "11" },
+      { id: "b", text: "13" },
+      { id: "c", text: "15" },
+      { id: "d", text: "17" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "133",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "Who holds the record for the most home runs in MLB history?",
+    options: [
+      { id: "a", text: "Babe Ruth" },
+      { id: "b", text: "Barry Bonds" },
+      { id: "c", text: "Hank Aaron" },
+      { id: "d", text: "Willie Mays" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "134",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "In which year did the first modern Olympic Games take place?",
+    options: [
+      { id: "a", text: "1892" },
+      { id: "b", text: "1896" },
+      { id: "c", text: "1900" },
+      { id: "d", text: "1904" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "135",
+    difficulty: "tricky",
+    category: "SPORTS",
+    text: "What is the maximum break possible in snooker?",
+    options: [
+      { id: "a", text: "147" },
+      { id: "b", text: "155" },
+      { id: "c", text: "147 with a free ball" },
+      { id: "d", text: "155 with a free ball" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "136",
+    difficulty: "tricky",
+    category: "SPORTS",
+    text: "Which Formula 1 driver has won the most consecutive championships?",
+    options: [
+      { id: "a", text: "Michael Schumacher" },
+      { id: "b", text: "Sebastian Vettel" },
+      { id: "c", text: "Ayrton Senna" },
+      { id: "d", text: "Alain Prost" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "137",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "Which sport uses a shuttlecock?",
+    options: [
+      { id: "a", text: "Tennis" },
+      { id: "b", text: "Badminton" },
+      { id: "c", text: "Squash" },
+      { id: "d", text: "Table tennis" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "138",
+    difficulty: "easy",
+    category: "SPORTS",
+    text: "How many holes are there in a standard round of golf?",
+    options: [
+      { id: "a", text: "9" },
+      { id: "b", text: "12" },
+      { id: "c", text: "18" },
+      { id: "d", text: "21" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "139",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "Which boxer was known as 'The Greatest'?",
+    options: [
+      { id: "a", text: "Mike Tyson" },
+      { id: "b", text: "Muhammad Ali" },
+      { id: "c", text: "Floyd Mayweather" },
+      { id: "d", text: "Sugar Ray Leonard" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "140",
+    difficulty: "average",
+    category: "SPORTS",
+    text: "In which sport would you perform a slam dunk?",
+    options: [
+      { id: "a", text: "Volleyball" },
+      { id: "b", text: "Basketball" },
+      { id: "c", text: "Tennis" },
+      { id: "d", text: "Badminton" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "141",
+    difficulty: "tricky",
+    category: "SPORTS",
+    text: "What is the term for a score of zero in tennis?",
+    options: [
+      { id: "a", text: "Nil" },
+      { id: "b", text: "Zero" },
+      { id: "c", text: "Love" },
+      { id: "d", text: "None" },
+    ],
+    correctOptionId: "c",
+  },
+  // --- MUSIC QUESTIONS (for Music Venue) ---
+  {
+    id: "109",
+    difficulty: "easy",
+    category: "MUSIC",
+    text: "Which Beatles song begins with 'Here comes the sun'?",
+    options: [
+      { id: "a", text: "Here Comes the Sun" },
+      { id: "b", text: "Blackbird" },
+      { id: "c", text: "Let It Be" },
+      { id: "d", text: "Hey Jude" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "110",
+    difficulty: "easy",
+    category: "MUSIC",
+    text: "What instrument does a drummer play?",
+    options: [
+      { id: "a", text: "Drums" },
+      { id: "b", text: "Guitar" },
+      { id: "c", text: "Piano" },
+      { id: "d", text: "Violin" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "111",
+    difficulty: "easy",
+    category: "MUSIC",
+    text: "Which artist sang 'Bohemian Rhapsody'?",
+    options: [
+      { id: "a", text: "The Rolling Stones" },
+      { id: "b", text: "Queen" },
+      { id: "c", text: "Led Zeppelin" },
+      { id: "d", text: "Pink Floyd" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "112",
+    difficulty: "average",
+    category: "MUSIC",
+    text: "What is the real name of the singer known as 'Sting'?",
+    options: [
+      { id: "a", text: "Gordon Sumner" },
+      { id: "b", text: "David Bowie" },
+      { id: "c", text: "Freddie Mercury" },
+      { id: "d", text: "John Lennon" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "113",
+    difficulty: "average",
+    category: "MUSIC",
+    text: "Which album is often called 'The White Album' by The Beatles?",
+    options: [
+      { id: "a", text: "Abbey Road" },
+      { id: "b", text: "Sgt. Pepper's Lonely Hearts Club Band" },
+      { id: "c", text: "The Beatles" },
+      { id: "d", text: "Revolver" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "114",
+    difficulty: "tricky",
+    category: "MUSIC",
+    text: "Which composer wrote 'The Four Seasons'?",
+    options: [
+      { id: "a", text: "Wolfgang Amadeus Mozart" },
+      { id: "b", text: "Antonio Vivaldi" },
+      { id: "c", text: "Johann Sebastian Bach" },
+      { id: "d", text: "Ludwig van Beethoven" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "115",
+    difficulty: "tricky",
+    category: "MUSIC",
+    text: "What was David Bowie's real name?",
+    options: [
+      { id: "a", text: "David Jones" },
+      { id: "b", text: "David Robert Jones" },
+      { id: "c", text: "David Bowie Jones" },
+      { id: "d", text: "David Smith" },
+    ],
+    correctOptionId: "b",
+  },
+  // --- FOOD QUESTIONS (for Food Festival) ---
+  {
+    id: "116",
+    difficulty: "easy",
+    category: "FOOD",
+    text: "What is the main ingredient in guacamole?",
+    options: [
+      { id: "a", text: "Tomatoes" },
+      { id: "b", text: "Avocado" },
+      { id: "c", text: "Onions" },
+      { id: "d", text: "Lime" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "117",
+    difficulty: "easy",
+    category: "FOOD",
+    text: "Which country is famous for pizza and pasta?",
+    options: [
+      { id: "a", text: "France" },
+      { id: "b", text: "Italy" },
+      { id: "c", text: "Spain" },
+      { id: "d", text: "Greece" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "118",
+    difficulty: "easy",
+    category: "FOOD",
+    text: "What type of food is sushi?",
+    options: [
+      { id: "a", text: "Chinese" },
+      { id: "b", text: "Japanese" },
+      { id: "c", text: "Thai" },
+      { id: "d", text: "Korean" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "119",
+    difficulty: "average",
+    category: "FOOD",
+    text: "What is the national dish of England?",
+    options: [
+      { id: "a", text: "Fish and chips" },
+      { id: "b", text: "Shepherd's pie" },
+      { id: "c", text: "Chicken tikka masala" },
+      { id: "d", text: "Roast beef and Yorkshire pudding" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "120",
+    difficulty: "average",
+    category: "FOOD",
+    text: "Which spice gives curry its yellow color?",
+    options: [
+      { id: "a", text: "Cumin" },
+      { id: "b", text: "Turmeric" },
+      { id: "c", text: "Coriander" },
+      { id: "d", text: "Cardamom" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "121",
+    difficulty: "tricky",
+    category: "FOOD",
+    text: "What is the main flavoring ingredient in traditional Worcestershire sauce?",
+    options: [
+      { id: "a", text: "Vinegar" },
+      { id: "b", text: "Anchovies" },
+      { id: "c", text: "Soy sauce" },
+      { id: "d", text: "Tamarind" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "122",
+    difficulty: "tricky",
+    category: "FOOD",
+    text: "Which French cheese is known for its blue veins and originates from the Auvergne region?",
+    options: [
+      { id: "a", text: "Roquefort" },
+      { id: "b", text: "Bleu d'Auvergne" },
+      { id: "c", text: "Stilton" },
+      { id: "d", text: "Gorgonzola" },
+    ],
+    correctOptionId: "b",
+  },
+  // --- ART QUESTIONS (for National Gallery) ---
+  {
+    id: "123",
+    difficulty: "easy",
+    category: "ART",
+    text: "Who painted the Mona Lisa?",
+    options: [
+      { id: "a", text: "Vincent van Gogh" },
+      { id: "b", text: "Leonardo da Vinci" },
+      { id: "c", text: "Pablo Picasso" },
+      { id: "d", text: "Michelangelo" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "124",
+    difficulty: "easy",
+    category: "ART",
+    text: "What art movement did Vincent van Gogh belong to?",
+    options: [
+      { id: "a", text: "Impressionism" },
+      { id: "b", text: "Post-Impressionism" },
+      { id: "c", text: "Cubism" },
+      { id: "d", text: "Surrealism" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "125",
+    difficulty: "easy",
+    category: "ART",
+    text: "Which artist is famous for cutting off his own ear?",
+    options: [
+      { id: "a", text: "Pablo Picasso" },
+      { id: "b", text: "Vincent van Gogh" },
+      { id: "c", text: "Claude Monet" },
+      { id: "d", text: "Salvador Dalí" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "126",
+    difficulty: "average",
+    category: "ART",
+    text: "What is the name of the painting that shows a woman with her arms crossed?",
+    options: [
+      { id: "a", text: "The Birth of Venus" },
+      { id: "b", text: "American Gothic" },
+      { id: "c", text: "The Scream" },
+      { id: "d", text: "Girl with a Pearl Earring" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "127",
+    difficulty: "average",
+    category: "ART",
+    text: "Which artist painted 'The Persistence of Memory' featuring melting clocks?",
+    options: [
+      { id: "a", text: "Salvador Dalí" },
+      { id: "b", text: "Rene Magritte" },
+      { id: "c", text: "Joan Miró" },
+      { id: "d", text: "Max Ernst" },
+    ],
+    correctOptionId: "a",
+  },
+  {
+    id: "128",
+    difficulty: "tricky",
+    category: "ART",
+    text: "Who painted 'The School of Athens'?",
+    options: [
+      { id: "a", text: "Leonardo da Vinci" },
+      { id: "b", text: "Raphael" },
+      { id: "c", text: "Michelangelo" },
+      { id: "d", text: "Sandro Botticelli" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "129",
+    difficulty: "tricky",
+    category: "ART",
+    text: "What art movement was characterized by bright colors and visible brushstrokes?",
+    options: [
+      { id: "a", text: "Cubism" },
+      { id: "b", text: "Impressionism" },
+      { id: "c", text: "Abstract Expressionism" },
+      { id: "d", text: "Pop Art" },
+    ],
+    correctOptionId: "b",
+  },
+  // --- GENERAL KNOWLEDGE QUESTIONS (for all venues) ---
+  {
+    id: "131",
+    difficulty: "easy",
+    category: "GK",
+    text: "What is the capital of France?",
+    options: [
+      { id: "a", text: "London" },
+      { id: "b", text: "Paris" },
+      { id: "c", text: "Berlin" },
+      { id: "d", text: "Rome" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "131",
+    difficulty: "easy",
+    category: "GK",
+    text: "Which planet is known as the Red Planet?",
+    options: [
+      { id: "a", text: "Venus" },
+      { id: "b", text: "Mars" },
+      { id: "c", text: "Jupiter" },
+      { id: "d", text: "Saturn" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "132",
+    difficulty: "easy",
+    category: "GK",
+    text: "What is the largest ocean in the world?",
+    options: [
+      { id: "a", text: "Atlantic Ocean" },
+      { id: "b", text: "Indian Ocean" },
+      { id: "c", text: "Pacific Ocean" },
+      { id: "d", text: "Arctic Ocean" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "133",
+    difficulty: "average",
+    category: "GK",
+    text: "Who wrote 'Pride and Prejudice'?",
+    options: [
+      { id: "a", text: "Emily Brontë" },
+      { id: "b", text: "Jane Austen" },
+      { id: "c", text: "Charlotte Brontë" },
+      { id: "d", text: "Mary Shelley" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "134",
+    difficulty: "average",
+    category: "GK",
+    text: "What is the chemical symbol for gold?",
+    options: [
+      { id: "a", text: "Go" },
+      { id: "b", text: "Gd" },
+      { id: "c", text: "Au" },
+      { id: "d", text: "Ag" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "135",
+    difficulty: "average",
+    category: "GK",
+    text: "Which river is the longest in the world?",
+    options: [
+      { id: "a", text: "Amazon River" },
+      { id: "b", text: "Nile River" },
+      { id: "c", text: "Yangtze River" },
+      { id: "d", text: "Mississippi River" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "136",
+    difficulty: "tricky",
+    category: "GK",
+    text: "What is the smallest country in the world?",
+    options: [
+      { id: "a", text: "Monaco" },
+      { id: "b", text: "Vatican City" },
+      { id: "c", text: "San Marino" },
+      { id: "d", text: "Liechtenstein" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "137",
+    difficulty: "tricky",
+    category: "GK",
+    text: "Who painted 'Starry Night'?",
+    options: [
+      { id: "a", text: "Claude Monet" },
+      { id: "b", text: "Vincent van Gogh" },
+      { id: "c", text: "Paul Gauguin" },
+      { id: "d", text: "Georges Seurat" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "138",
+    difficulty: "hard",
+    category: "GK",
+    text: "What is the capital of Australia?",
+    options: [
+      { id: "a", text: "Sydney" },
+      { id: "b", text: "Melbourne" },
+      { id: "c", text: "Canberra" },
+      { id: "d", text: "Brisbane" },
+    ],
+    correctOptionId: "c",
+  },
+  {
+    id: "139",
+    difficulty: "hard",
+    category: "GK",
+    text: "Which element has the atomic number 1?",
+    options: [
+      { id: "a", text: "Helium" },
+      { id: "b", text: "Hydrogen" },
+      { id: "c", text: "Lithium" },
+      { id: "d", text: "Beryllium" },
+    ],
+    correctOptionId: "b",
+  },
+  {
+    id: "140",
+    difficulty: "hard",
+    category: "GK",
     text: "What is the deepest point in the Earth's oceans?",
     options: [
       { id: "a", text: "Tonga Trench" },

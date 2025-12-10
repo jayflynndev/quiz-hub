@@ -56,7 +56,7 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
       {/* Top header to match other screens */}
       <View style={styles.header}>
         <Text style={styles.appTag}>Energy System</Text>
-        <Text style={styles.appTitle}>Jay&apos;s Quiz Odyssey</Text>
+        <Text style={styles.appTitle}>Jay&apos;s Quiz Hub</Text>
         <Text style={styles.appSubtitle}>
           Hearts power your runs. Run out, and you&apos;ll need to recharge.
         </Text>
@@ -65,9 +65,10 @@ export const OutOfHeartsScreen: React.FC<OutOfHeartsScreenProps> = ({
       {/* Main card */}
       <View style={styles.cardOuter}>
         <View style={styles.cardInner}>
-          <View style={styles.cardHighlightStrip} />
+          <View style={[styles.cardHighlightStrip, styles.energyStrip]} />
 
-          <Text style={styles.headerText}>You&apos;re Out of Hearts 💔</Text>
+          <Text style={styles.cardTitle}>💔 Out of Hearts</Text>
+
           <Text style={styles.subHeader}>
             Hearts are needed to attempt levels. Fail a level, lose a heart.
           </Text>
@@ -158,7 +159,8 @@ const styles = StyleSheet.create({
   },
   cardInner: {
     borderRadius: 22,
-    paddingVertical: 20,
+    paddingTop: 58, // 40 for strip + 18 for spacing
+    paddingBottom: 18,
     paddingHorizontal: 18,
     backgroundColor: "rgba(15,23,42,0.97)",
     borderWidth: 1,
@@ -176,17 +178,25 @@ const styles = StyleSheet.create({
     left: -20,
     right: -20,
     height: 40,
-    backgroundColor: "rgba(220,38,38,0.4)",
     opacity: 0.7,
   },
-
-  headerText: {
-    fontSize: 20,
-    fontWeight: "800",
+  energyStrip: {
+    backgroundColor: "rgba(220,38,38,0.45)", // red for energy/hearts
+  },
+  cardTitle: {
+    position: "absolute",
+    top: 0,
+    left: 18,
+    right: 18,
+    height: 40,
+    fontSize: 18,
+    fontWeight: "bold",
     color: TEXT_MAIN,
     textAlign: "center",
-    marginBottom: 8,
+    textAlignVertical: "center",
+    lineHeight: 40,
   },
+
   subHeader: {
     fontSize: 14,
     color: TEXT_MUTED,

@@ -120,9 +120,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <StageScreen>
-      {/* Top scoreboard / HUD */}
+      {/* Enhanced Top HUD */}
       <View style={styles.hudContainer}>
-        <View>
+        <View style={styles.venueInfo}>
           <Text style={styles.venueTag}>{venueName}</Text>
           <Text style={styles.levelTag}>Level {level.levelNumber}</Text>
         </View>
@@ -143,105 +143,130 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
       <View style={styles.hudBottomRow}>
         <View style={styles.hudInlineRow}>
-          <Text
-            style={styles.hudMetaText}
-            accessibilityLabel={`Coins: ${profile.coins}`}
-          >
-            Coins {profile.coins}
-          </Text>
-          <Text
-            style={styles.hudMetaText}
-            accessibilityLabel={`Hearts: ${profile.hearts}`}
-          >
-            Hearts {profile.hearts}
-          </Text>
+          <Text style={styles.hudMetaText}>💰 {profile.coins}</Text>
+          <Text style={styles.hudMetaText}>❤️ {profile.hearts}</Text>
         </View>
         {timeLeft !== null && (
-          <View
-            style={styles.timerPill}
-            accessibilityLabel={`Time remaining: ${timeLeft} seconds`}
-          >
-            <Text style={styles.timerLabel}>TIME</Text>
+          <View style={styles.timerPill}>
+            <Text style={styles.timerLabel}>⏱️</Text>
             <Text style={styles.timerValue}>{timeLeft}s</Text>
           </View>
         )}
       </View>
 
       {!isFinished && total > 0 && (
-        <Text style={styles.questionProgress}>
-          Question {currentIndex + 1} of {total}
-        </Text>
+        <View style={styles.progressContainer}>
+          <Text style={styles.questionProgress}>
+            Question {currentIndex + 1} of {total}
+          </Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${((currentIndex + 1) / total) * 100}%` },
+              ]}
+            />
+          </View>
+        </View>
       )}
 
       {/* Active question state */}
       {!isFinished && question && (
         <>
-          {/* Lifelines */}
-          <View style={styles.lifelineRow}>
-            {lifelinesAllowed.includes("ASK_QUIZZERS") &&
-              askQuizzersRemaining > 0 && (
-                <TouchableOpacity
-                  style={[
-                    styles.lifelineButton,
-                    usedAskQuizzersThisQuestion && styles.lifelineButtonUsed,
-                  ]}
-                  disabled={usedAskQuizzersThisQuestion}
-                  onPress={onUseAskQuizzers}
-                  activeOpacity={0.85}
-                  accessibilityLabel={`Ask Quizzers lifeline, ${askQuizzersRemaining} remaining`}
-                  accessibilityHint="Get help from virtual quizzers to eliminate wrong answers"
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: usedAskQuizzersThisQuestion }}
-                >
-                  <Text style={styles.lifelineLabel}>Ask Quizzers</Text>
-                  <Text style={styles.lifelineCount}>
-                    x{askQuizzersRemaining}
-                  </Text>
-                </TouchableOpacity>
-              )}
+          {/* Enhanced Lifelines */}
+          <View style={styles.lifelinesCard}>
+            <View style={styles.lifelinesHeader}>
+              <Text style={styles.lifelinesTitle}>🛡️ Lifelines</Text>
+            </View>
+            <View style={styles.lifelineRow}>
+              {lifelinesAllowed.includes("ASK_QUIZZERS") &&
+                askQuizzersRemaining > 0 && (
+                  <TouchableOpacity
+                    style={[
+                      styles.lifelineButton,
+                      usedAskQuizzersThisQuestion && styles.lifelineButtonUsed,
+                    ]}
+                    disabled={usedAskQuizzersThisQuestion}
+                    onPress={onUseAskQuizzers}
+                    activeOpacity={0.85}
+                    accessibilityLabel={`Ask Quizzers lifeline, ${askQuizzersRemaining} remaining`}
+                    accessibilityHint="Get help from virtual quizzers to eliminate wrong answers"
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: usedAskQuizzersThisQuestion,
+                    }}
+                  >
+                    <Text style={styles.lifelineIcon}>👥</Text>
+                    <View style={styles.lifelineTextContainer}>
+                      <Text style={styles.lifelineLabel}>Ask Quizzers</Text>
+                      <Text style={styles.lifelineCount}>
+                        x{askQuizzersRemaining}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
 
-            {lifelinesAllowed.includes("FIFTY_FIFTY") &&
-              fiftyFiftyRemaining > 0 && (
-                <TouchableOpacity
-                  style={[
-                    styles.lifelineButton,
-                    usedFiftyFiftyThisQuestion && styles.lifelineButtonUsed,
-                  ]}
-                  disabled={usedFiftyFiftyThisQuestion}
-                  onPress={onUseFiftyFifty}
-                  activeOpacity={0.85}
-                  accessibilityLabel={`Fifty fifty lifeline, ${fiftyFiftyRemaining} remaining`}
-                  accessibilityHint="Remove two incorrect answers, leaving two options"
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: usedFiftyFiftyThisQuestion }}
-                >
-                  <Text style={styles.lifelineLabel}>50 / 50</Text>
-                  <Text style={styles.lifelineCount}>
-                    x{fiftyFiftyRemaining}
-                  </Text>
-                </TouchableOpacity>
-              )}
+              {lifelinesAllowed.includes("FIFTY_FIFTY") &&
+                fiftyFiftyRemaining > 0 && (
+                  <TouchableOpacity
+                    style={[
+                      styles.lifelineButton,
+                      usedFiftyFiftyThisQuestion && styles.lifelineButtonUsed,
+                    ]}
+                    disabled={usedFiftyFiftyThisQuestion}
+                    onPress={onUseFiftyFifty}
+                    activeOpacity={0.85}
+                    accessibilityLabel={`Fifty fifty lifeline, ${fiftyFiftyRemaining} remaining`}
+                    accessibilityHint="Remove two incorrect answers, leaving two options"
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: usedFiftyFiftyThisQuestion,
+                    }}
+                  >
+                    <Text style={styles.lifelineIcon}>🎯</Text>
+                    <View style={styles.lifelineTextContainer}>
+                      <Text style={styles.lifelineLabel}>50/50</Text>
+                      <Text style={styles.lifelineCount}>
+                        x{fiftyFiftyRemaining}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+            </View>
           </View>
 
-          {/* Audience poll */}
+          {/* Enhanced Audience Poll */}
           {audiencePoll && (
-            <View style={styles.pollContainer}>
-              {question.options.map((option) => (
-                <Text key={option.id} style={styles.pollText}>
-                  {option.id}: {audiencePoll[option.id] ?? 0}%
-                </Text>
-              ))}
+            <View style={styles.pollCard}>
+              <View style={styles.pollHeader}>
+                <Text style={styles.pollTitle}>📊 Audience Poll Results</Text>
+              </View>
+              <View style={styles.pollResults}>
+                {question.options.map((option) => {
+                  const percentage = audiencePoll[option.id] ?? 0;
+                  return (
+                    <View key={option.id} style={styles.pollItem}>
+                      <Text style={styles.pollOptionText}>{option.id}.</Text>
+                      <View style={styles.pollBarContainer}>
+                        <View
+                          style={[styles.pollBar, { width: `${percentage}%` }]}
+                        />
+                      </View>
+                      <Text style={styles.pollPercentage}>{percentage}%</Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           )}
 
-          {/* Question card + options */}
+          {/* Enhanced Question Card */}
           <View style={styles.questionCard}>
             <View style={styles.questionHighlightStrip} />
-            <Text style={styles.questionText} accessibilityRole="text">
-              Q{currentIndex + 1}. {question.text}
-            </Text>
+            <Text style={styles.questionText}>{question.text}</Text>
           </View>
 
+          {/* Enhanced Options */}
           <View style={styles.optionsContainer}>
             {question.options
               .filter((option) => !hiddenOptions.includes(option.id))
@@ -277,9 +302,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       disabled: disabled,
                     }}
                   >
-                    <Text style={styles.optionText}>
-                      {option.id}. {option.text}
-                    </Text>
+                    <Text style={styles.optionLetter}>{option.id}.</Text>
+                    <Text style={styles.optionText}>{option.text}</Text>
                   </Pressable>
                 );
               })}
@@ -374,16 +398,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
+  venueInfo: {
+    flex: 1,
+  },
   venueTag: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#9CA3FF",
     textTransform: "uppercase",
     letterSpacing: 1.5,
+    fontWeight: "600",
   },
   levelTag: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "800",
     color: TEXT_MAIN,
+    marginTop: 2,
   },
   hudStatsRow: {
     flexDirection: "row",
@@ -391,18 +420,19 @@ const styles = StyleSheet.create({
   },
   statPill: {
     borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: "rgba(15,23,42,0.9)",
     borderWidth: 1,
     borderColor: "rgba(148,163,255,0.7)",
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: "#A5B4FC",
+    fontWeight: "600",
   },
   statValue: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
     color: TEXT_MAIN,
   },
@@ -411,99 +441,199 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8,
   },
   hudInlineRow: {
     flexDirection: "row",
-    gap: 12,
+    gap: 16,
   },
   hudMetaText: {
-    fontSize: 12,
+    fontSize: 14,
     color: TEXT_MUTED,
+    fontWeight: "600",
   },
   timerPill: {
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     backgroundColor: "rgba(30,64,175,0.95)",
     borderWidth: 1,
     borderColor: "#FBBF24",
   },
   timerLabel: {
-    fontSize: 10,
+    fontSize: 14,
     color: "#FBBF24",
-    marginRight: 4,
-    fontWeight: "700",
+    marginRight: 6,
   },
   timerValue: {
-    fontSize: 13,
+    fontSize: 16,
     color: "#FEF9C3",
     fontWeight: "700",
   },
-  questionProgress: {
-    fontSize: 13,
-    color: TEXT_MUTED,
+
+  // Progress indicator
+  progressContainer: {
     paddingHorizontal: 20,
-    marginTop: 6,
-    marginBottom: 4,
+    marginBottom: 12,
+  },
+  questionProgress: {
+    fontSize: 15,
+    color: TEXT_MUTED,
+    fontWeight: "600",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: "rgba(75,85,99,0.3)",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#60A5FA",
+    borderRadius: 2,
   },
 
-  // Lifelines
-  lifelineRow: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    gap: 8,
-  },
-  lifelineButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+  // Lifelines Card
+  lifelinesCard: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 16,
     backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
-    borderColor: "rgba(96,165,250,0.9)",
-    shadowColor: "#60A5FA",
-    shadowOpacity: 0.6,
-    shadowRadius: 10,
+    borderColor: "rgba(96,165,250,0.6)",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
+  },
+  lifelinesHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  lifelinesTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+  },
+  lifelineRow: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 12,
+  },
+  lifelineButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "rgba(59,130,246,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(96,165,250,0.8)",
+    shadowColor: "#60A5FA",
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   lifelineButtonUsed: {
     opacity: 0.4,
     shadowOpacity: 0,
+    borderColor: "rgba(156,163,175,0.5)",
+  },
+  lifelineIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  lifelineTextContainer: {
+    flex: 1,
   },
   lifelineLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700",
     color: "#E0F2FE",
   },
   lifelineCount: {
-    marginLeft: 6,
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "600",
     color: "#BAE6FD",
+    marginTop: 1,
   },
 
-  // Poll
-  pollContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 6,
+  // Poll Card
+  pollCard: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 16,
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1,
+    borderColor: "rgba(245,158,11,0.6)",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
-  pollText: {
-    color: TEXT_MUTED,
-    fontSize: 12,
+  pollHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  pollTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+  },
+  pollResults: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 8,
+  },
+  pollItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  pollOptionText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+    minWidth: 20,
+  },
+  pollBarContainer: {
+    flex: 1,
+    height: 20,
+    backgroundColor: "rgba(75,85,99,0.3)",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  pollBar: {
+    height: "100%",
+    backgroundColor: "#F59E0B",
+    borderRadius: 10,
+  },
+  pollPercentage: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: TEXT_MAIN,
+    minWidth: 35,
+    textAlign: "right",
   },
 
   // Question + options
   questionCard: {
-    marginTop: 14,
     marginHorizontal: 20,
+    marginBottom: 16,
     borderRadius: 18,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
     backgroundColor: "rgba(15,23,42,0.98)",
     borderWidth: 1,
     borderColor: "rgba(148,163,255,0.7)",
@@ -524,19 +654,22 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   questionText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
     color: TEXT_MAIN,
+    lineHeight: 24,
   },
   optionsContainer: {
-    marginTop: 14,
     marginHorizontal: 20,
+    marginBottom: 20,
   },
   optionButton: {
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 12,
     backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
     borderColor: "rgba(148,163,255,0.7)",
@@ -547,12 +680,21 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   optionButtonPressed: {
-    transform: [{ scale: 0.97 }],
+    transform: [{ scale: 0.98 }],
+  },
+  optionLetter: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#60A5FA",
+    marginRight: 12,
+    minWidth: 24,
   },
   optionText: {
+    flex: 1,
     color: "#E5E7EB",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
+    lineHeight: 22,
   },
   correctOption: {
     backgroundColor: "#16A34A",
@@ -580,8 +722,8 @@ const styles = StyleSheet.create({
   resultBanner: {
     alignSelf: "center",
     borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
     borderColor: "rgba(148,163,255,0.9)",
@@ -593,31 +735,33 @@ const styles = StyleSheet.create({
   },
   resultBannerText: {
     color: TEXT_MAIN,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "800",
   },
   finishedSub: {
-    marginTop: 14,
+    marginTop: 16,
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 16,
     color: TEXT_MUTED,
+    fontWeight: "600",
   },
   finishedSubEm: {
     color: TEXT_MAIN,
     fontWeight: "700",
   },
   summaryBox: {
-    marginTop: 18,
+    marginTop: 20,
     borderRadius: 18,
-    padding: 14,
+    padding: 16,
     backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
     borderColor: "rgba(148,163,255,0.7)",
   },
   summaryLine: {
     color: TEXT_MAIN,
-    fontSize: 13,
-    marginBottom: 4,
+    fontSize: 15,
+    marginBottom: 6,
+    lineHeight: 20,
   },
 
   // Centered edge states
@@ -628,14 +772,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   centerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
     color: TEXT_MAIN,
     marginBottom: 8,
     textAlign: "center",
   },
   centerSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: TEXT_MUTED,
     textAlign: "center",
     marginBottom: 16,

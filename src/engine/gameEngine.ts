@@ -11,6 +11,7 @@ import type {
 } from "../types/game";
 
 import { QUESTIONS } from "../data/questions";
+import { VENUES } from "../data/venues";
 
 export const DEFAULT_TUNING: GameTuningConfig = {
   startingLivesPerLevel: 3,
@@ -19,6 +20,20 @@ export const DEFAULT_TUNING: GameTuningConfig = {
 
 const findQuestionById = (id: string): Question | undefined =>
   QUESTIONS.find((q) => q.id === id);
+
+const getCategoryForVenue = (venueId: string): string | null => {
+  const venue = VENUES.find((v) => v.id === venueId);
+  if (!venue) return null; // General venues return null to allow any category
+
+  // Specialist venues return their specific category
+  if (venue.id === "uk_sports_bar") return "SPORTS";
+  if (venue.id === "uk_music_venue") return "MUSIC";
+  if (venue.id === "uk_food_festival") return "FOOD";
+  if (venue.id === "uk_national_gallery") return "ART";
+
+  // General venues (Local Pub, Village Hall) return null to allow any category
+  return null;
+};
 
 const getLevelDifficulty = (levelNumber: number): QuestionDifficulty => {
   if (levelNumber <= 2) return "entry";
@@ -41,16 +56,32 @@ export const createSessionForLevel = (
   const questionsPerRun = getQuestionsPerRunForLevel(level.levelNumber);
   let questionIds: string[] = [];
 
-  // 1) Try difficulty-based global pool
+  // 1) Try difficulty-based global pool (for all venues)
   const difficulty = getLevelDifficulty(level.levelNumber);
-  const poolByDifficulty = QUESTIONS.filter(
-    (q) => q.difficulty === difficulty
-  ).map((q) => q.id);
-
+  const category = getCategoryForVenue(level.venueId);
   const desiredCount = getQuestionsPerRunForLevel(level.levelNumber);
 
-  if (poolByDifficulty.length >= desiredCount) {
-    questionIds = pickRandomQuestionIds(poolByDifficulty, desiredCount);
+  let pool: string[];
+
+  if (category) {
+    // Specialist venue: filter by both difficulty and category
+    pool = QUESTIONS.filter(
+      (q) => q.difficulty === difficulty && q.category === category
+    ).map((q) => q.id);
+
+    if (pool.length < desiredCount) {
+      // Fallback: any difficulty for this category
+      pool = QUESTIONS.filter((q) => q.category === category).map((q) => q.id);
+    }
+  } else {
+    // General venue: filter by difficulty only (any category)
+    pool = QUESTIONS.filter((q) => q.difficulty === difficulty).map(
+      (q) => q.id
+    );
+  }
+
+  if (pool.length >= desiredCount) {
+    questionIds = pickRandomQuestionIds(pool, desiredCount);
   } else {
     // 2) Fallback: explicit pool if defined
     if (level.questionPoolIds && level.questionPoolIds.length > 0) {

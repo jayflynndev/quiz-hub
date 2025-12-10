@@ -8,7 +8,7 @@ import {
   ViewStyle,
   StyleProp,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface StageScreenProps {
   children: React.ReactNode;
@@ -19,6 +19,8 @@ export const StageScreen: React.FC<StageScreenProps> = ({
   children,
   style,
 }) => {
+  const insets = useSafeAreaInsets();
+
   // Screen fade-in animation
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
@@ -143,9 +145,16 @@ export const StageScreen: React.FC<StageScreenProps> = ({
 
   return (
     <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
-      <SafeAreaView
-        style={styles.safe}
-        edges={["top", "right", "bottom", "left"]}
+      <View
+        style={[
+          styles.safe,
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          },
+        ]}
       >
         {/* Background stage */}
         <View style={styles.background}>
@@ -175,7 +184,7 @@ export const StageScreen: React.FC<StageScreenProps> = ({
 
         {/* Foreground content */}
         <View style={[styles.content, style]}>{children}</View>
-      </SafeAreaView>
+      </View>
     </Animated.View>
   );
 };
