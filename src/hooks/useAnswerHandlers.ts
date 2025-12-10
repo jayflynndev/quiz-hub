@@ -17,7 +17,10 @@ interface UseAnswerHandlersArgs {
   questionTimeLimitSeconds: number;
   getLevelById: (id: LevelId | null) => LevelConfig | null;
   onAnswerOutcome: (updated: GameSession, level: LevelConfig) => void;
-  checkAndUnlockAchievement?: (achievementId: AchievementId, progress?: number) => void;
+  checkAndUnlockAchievement?: (
+    achievementId: AchievementId,
+    progress?: number
+  ) => void;
   profileHearts?: number;
 }
 
@@ -66,7 +69,10 @@ export const useAnswerHandlers = (
       }
 
       // Check lucky_guess achievement (correct answer on last heart)
-      if (profileHearts === 1 && updated.answers[updated.answers.length - 1]?.correct) {
+      if (
+        profileHearts === 1 &&
+        updated.answers[updated.answers.length - 1]?.correct
+      ) {
         checkAndUnlockAchievement?.("lucky_guess");
       }
 

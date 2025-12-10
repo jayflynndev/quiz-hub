@@ -433,9 +433,10 @@ function AppContent() {
       // Check venue achievements
       const venueId = level.venueId;
       const venueLevels = getOrderedVenueLevels(venueId);
-      const completedVenueLevels = venueLevels.filter(level => 
-        progress.completedLevelIds.includes(level.id)
-      ).length + 1; // +1 for current completion
+      const completedVenueLevels =
+        venueLevels.filter((level) =>
+          progress.completedLevelIds.includes(level.id)
+        ).length + 1; // +1 for current completion
 
       if (completedVenueLevels >= venueLevels.length) {
         checkAndUnlockAchievement("venue_master");
@@ -443,10 +444,12 @@ function AppContent() {
 
       // Track unique venues completed
       const uniqueVenues = new Set(
-        progress.completedLevelIds.map(levelId => {
-          const level = getLevelById(levelId);
-          return level?.venueId;
-        }).filter(Boolean)
+        progress.completedLevelIds
+          .map((levelId) => {
+            const level = getLevelById(levelId);
+            return level?.venueId;
+          })
+          .filter(Boolean)
       );
       if (uniqueVenues.size >= 3) {
         checkAndUnlockAchievement("venue_explorer");
